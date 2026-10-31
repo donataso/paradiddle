@@ -15,7 +15,7 @@ Drum rudiments trainer. Static web app, hosted on GitHub Pages or Cloudflare Pag
 - **Editor**: step grid with selectable notes per beat (tuplets are notated automatically); per step: hand, accent, flam, drag, diddle, buzz, rest, hold. Any time signature, including odd meters with custom beat grouping.
 - **Custom rudiments**: built-ins are read-only; copy to customize, or create new.
 - **Storage**: localStorage; JSON download/upload of all or individual rudiments. Uploads merge; duplicate names are renamed.
-- **Devices**: desktop, tablet, phone.
+- **Devices**: desktop, tablet, phone; installable as an app (PWA) with offline support.
 - **Theme**: dark mode follows the system setting.
 
 ## Stack
