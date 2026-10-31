@@ -1,6 +1,6 @@
 # Paradiddle
 
-Drum rudiments trainer. Static web app, hosted on GitHub Pages or Cloudflare Pages.
+Drum rudiments trainer.
 
 ## Features
 
@@ -38,4 +38,4 @@ Output goes to `dist/`.
 
 ## License
 
-[AGPL-3.0-or-later](LICENSE)
+© 2026 [Donatas Olsevičius](https://www.linkedin.com/in/olsevicius/) — [AGPL-3.0-or-later](LICENSE)
