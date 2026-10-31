@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "run", "--rm", "--service-ports", "dev"],
+      "port": 5173
+    }
+  ]
+}

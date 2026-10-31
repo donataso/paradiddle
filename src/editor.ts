@@ -1,0 +1,256 @@
+// Paradiddle - drum rudiments trainer
+// Copyright (C) 2026 Donatas Olsevičius
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+import { Beat, DENOMINATORS, Frac, Hand, Measure, Rudiment, Slot, TimeSig, beatLengths, defaultGroups, parsePattern, serializePattern } from './model';
+
+const SUBDIVISIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12];
+
+interface Sel { m: number; b: number; i: number }
+
+export interface EditorHooks {
+  change(r: Rudiment, measures: Measure[]): void;
+  save(r: Rudiment): void;
+  cancel(): void;
+  remove(r: Rudiment): void;
+}
+
+const $ = <T extends HTMLElement>(root: HTMLElement, sel: string) => root.querySelector(sel) as T;
+
+export class Editor {
+  draft!: Rudiment;
+  isNew = false;
+  dirty = false;
+  private measures: Measure[] = [];
+  private sel: Sel | null = { m: 0, b: 0, i: 0 };
+
+  constructor(private root: HTMLElement, private hooks: EditorHooks) {
+    root.innerHTML = `
+      <div class="ed-fields">
+        <label class="ed-name">Name <input id="edName" maxlength="80"></label>
+        <label>Category <input id="edCat" list="catList" maxlength="40"></label>
+        <label class="ed-time">Time
+          <span><input id="edNum" type="number" min="1" max="32" inputmode="numeric"> /
+          <select id="edDen">${DENOMINATORS.map(d => `<option>${d}</option>`).join('')}</select></span>
+        </label>
+        <label id="edGroupsWrap">Grouping <input id="edGroups" placeholder="2+2+3"></label>
+      </div>
+      <div class="ed-tools" role="toolbar">
+        <button data-act="R" title="Right hand">R</button>
+        <button data-act="L" title="Left hand">L</button>
+        <button data-act="rest" title="Rest">Rest</button>
+        <button data-act="hold" title="Extend previous note">Hold</button>
+        <span class="sep"></span>
+        <button data-act="accent" title="Accent">&gt; Accent</button>
+        <button data-act="flam" title="Flam">Flam</button>
+        <button data-act="drag" title="Drag">Drag</button>
+        <button data-act="diddle" title="Diddle (slash)">Diddle</button>
+        <button data-act="buzz" title="Buzz">Buzz</button>
+      </div>
+      <div class="ed-grid"></div>
+      <div class="ed-error" role="alert"></div>
+      <div class="ed-actions">
+        <button data-act="addMeasure">+ Measure</button>
+        <span class="grow"></span>
+        <button data-act="delete" class="danger">Delete</button>
+        <button data-act="cancel">Cancel</button>
+        <button data-act="save" class="primary">Save</button>
+      </div>`;
+    root.addEventListener('click', e => {
+      const btn = (e.target as HTMLElement).closest('button');
+      if (!btn) return;
+      const act = btn.dataset.act;
+      if (btn.dataset.cell) {
+        const [m, b, i] = btn.dataset.cell.split(',').map(Number);
+        this.sel = { m, b, i };
+        this.renderGrid();
+        return;
+      }
+      if (act) this.action(act, btn);
+    });
+    root.addEventListener('change', e => {
+      const t = e.target as HTMLElement;
+      if (t instanceof HTMLSelectElement && t.dataset.beat) {
+        const [m, b] = t.dataset.beat.split(',').map(Number);
+        this.resubdivide(m, b, Number(t.value));
+      }
+    });
+    $<HTMLInputElement>(root, '#edName').addEventListener('input', e => {
+      this.draft.name = (e.target as HTMLInputElement).value;
+      this.dirty = true;
+    });
+    $<HTMLInputElement>(root, '#edCat').addEventListener('input', e => {
+      this.draft.category = (e.target as HTMLInputElement).value;
+      this.dirty = true;
+    });
+    for (const id of ['#edNum', '#edDen', '#edGroups']) {
+      $(root, id).addEventListener('change', () => this.timeChanged());
+    }
+  }
+
+  open(r: Rudiment, isNew: boolean) {
+    this.draft = structuredClone(r);
+    this.isNew = isNew;
+    this.dirty = isNew;
+    this.measures = parsePattern(r.pattern, r.time);
+    this.sel = { m: 0, b: 0, i: 0 };
+    $<HTMLInputElement>(this.root, '#edName').value = r.name;
+    $<HTMLInputElement>(this.root, '#edCat').value = r.category;
+    this.fillTime();
+    $(this.root, '[data-act="delete"]').hidden = isNew;
+    this.error('');
+    this.renderGrid();
+    this.emit(false);
+  }
+
+  private fillTime() {
+    const t = this.draft.time;
+    $<HTMLInputElement>(this.root, '#edNum').value = String(t.num);
+    $<HTMLSelectElement>(this.root, '#edDen').value = String(t.den);
+    $<HTMLInputElement>(this.root, '#edGroups').value = (t.groups ?? defaultGroups(t.num, t.den)).join('+');
+    $(this.root, '#edGroupsWrap').hidden = t.den !== 8;
+  }
+
+  private timeChanged() {
+    const num = Math.max(1, Math.min(32, Math.round(Number($<HTMLInputElement>(this.root, '#edNum').value) || 4)));
+    const den = Number($<HTMLSelectElement>(this.root, '#edDen').value);
+    const raw = $<HTMLInputElement>(this.root, '#edGroups').value.split('+').map(s => Number(s.trim()));
+    const time: TimeSig = { num, den };
+    if (den === 8 && raw.every(n => n > 0) && raw.reduce((a, b) => a + b, 0) === num) {
+      if (raw.join('+') !== defaultGroups(num, den).join('+')) time.groups = raw;
+    }
+    if (den !== this.draft.time.den || num !== this.draft.time.num) delete time.groups;
+    this.draft.time = time;
+    this.fillTime();
+    const lens = beatLengths(time);
+    this.measures = this.measures.map(m => lens.map((len, i) => (m[i] && m[i].len.cmp(len) === 0 ? m[i] : blankBeat(len))));
+    this.sel = { m: 0, b: 0, i: 0 };
+    this.renderGrid();
+    this.emit();
+  }
+
+  private resubdivide(m: number, b: number, n: number) {
+    const old = this.measures[m][b];
+    const slots: Slot[] = [];
+    for (let j = 0; j < n; j++) {
+      const at = new Frac(j, n);
+      const k = old.slots.findIndex((_, i) => new Frac(i, old.slots.length).cmp(at) === 0);
+      slots.push(k >= 0 ? old.slots[k] : { kind: j ? 'hold' : 'rest' });
+    }
+    this.measures[m][b] = { len: old.len, slots };
+    this.sel = { m, b, i: 0 };
+    this.renderGrid();
+    this.emit();
+  }
+
+  private action(act: string, btn: HTMLElement) {
+    switch (act) {
+      case 'addMeasure': {
+        const last = this.measures[this.measures.length - 1];
+        this.measures.push(last.map(b => ({ len: b.len, slots: b.slots.map(s => ({ ...s })) })));
+        break;
+      }
+      case 'removeMeasure': {
+        if (this.measures.length < 2) return;
+        this.measures.splice(Number(btn.dataset.m), 1);
+        this.sel = { m: 0, b: 0, i: 0 };
+        break;
+      }
+      case 'save':
+        if (!this.draft.name.trim()) return this.error('Name is required');
+        if (!this.draft.category.trim()) this.draft.category = 'Custom';
+        this.draft.name = this.draft.name.trim();
+        this.draft.category = this.draft.category.trim();
+        this.draft.pattern = serializePattern(this.measures);
+        this.dirty = false;
+        return this.hooks.save(this.draft);
+      case 'cancel':
+        this.dirty = false;
+        return this.hooks.cancel();
+      case 'delete':
+        return this.hooks.remove(this.draft);
+      default:
+        if (!this.sel) return;
+        this.edit(this.measures[this.sel.m][this.sel.b].slots, this.sel.i, act);
+    }
+    this.renderGrid();
+    this.emit();
+  }
+
+  private edit(slots: Slot[], i: number, act: string) {
+    const s = slots[i];
+    if (act === 'R' || act === 'L') {
+      slots[i] = s.kind === 'note' ? { ...s, hand: act as Hand } : { kind: 'note', hand: act as Hand };
+      return;
+    }
+    if (act === 'rest' || act === 'hold') {
+      slots[i] = { kind: act };
+      return;
+    }
+    if (s.kind !== 'note') return;
+    const n = { ...s };
+    if (act === 'accent') n.accent = !n.accent || undefined;
+    if (act === 'flam' || act === 'drag') n.grace = n.grace === act ? undefined : act;
+    if (act === 'diddle' || act === 'buzz') n.roll = n.roll === act ? undefined : act;
+    slots[i] = n;
+  }
+
+  private emit(dirty = true) {
+    if (dirty) this.dirty = true;
+    this.draft.pattern = serializePattern(this.measures);
+    this.hooks.change(this.draft, this.measures);
+  }
+
+  private error(msg: string) {
+    $(this.root, '.ed-error').textContent = msg;
+  }
+
+  private renderGrid() {
+    const grid = $(this.root, '.ed-grid');
+    grid.innerHTML = this.measures.map((m, mi) => `
+      <div class="ed-measure">
+        <div class="ed-mhead"><span>Measure ${mi + 1}</span>
+          ${this.measures.length > 1 ? `<button data-act="removeMeasure" data-m="${mi}" title="Remove measure" aria-label="Remove measure ${mi + 1}">×</button>` : ''}
+        </div>
+        <div class="ed-beats">${m.map((b, bi) => this.beatHtml(b, mi, bi)).join('')}</div>
+      </div>`).join('');
+    const cur = this.sel && this.measures[this.sel.m]?.[this.sel.b]?.slots[this.sel.i];
+    this.root.querySelectorAll<HTMLButtonElement>('.ed-tools button').forEach(btn => {
+      const a = btn.dataset.act!;
+      const on = !!cur && (
+        (cur.kind === 'note' && (cur.hand === a || (a === 'accent' && cur.accent) || cur.grace === a || cur.roll === a)) ||
+        cur.kind === a);
+      btn.classList.toggle('on', on);
+      btn.disabled = !cur || (cur.kind !== 'note' && ['accent', 'flam', 'drag', 'diddle', 'buzz'].includes(a));
+    });
+  }
+
+  private beatHtml(b: Beat, mi: number, bi: number): string {
+    const n = b.slots.length;
+    const options = [...new Set([...SUBDIVISIONS, n])].sort((x, y) => x - y)
+      .map(s => `<option value="${s}" ${s === n ? 'selected' : ''}>${s}</option>`).join('');
+    const cells = b.slots.map((s, i) => {
+      const sel = this.sel && this.sel.m === mi && this.sel.b === bi && this.sel.i === i;
+      return `<button class="cell ${s.kind}${s.accent ? ' accent' : ''}${sel ? ' sel' : ''}" data-cell="${mi},${bi},${i}" aria-label="${cellLabel(s)}">${cellHtml(s)}</button>`;
+    }).join('');
+    return `<div class="ed-beat"><select data-beat="${mi},${bi}" title="Notes in beat ${bi + 1}" aria-label="Notes in beat ${bi + 1}">${options}</select><div class="cells">${cells}</div></div>`;
+  }
+}
+
+function blankBeat(len: Frac): Beat {
+  const n = Math.max(1, Math.round(len.value * 8));
+  return { len, slots: [...Array(n)].map(() => ({ kind: 'rest' as const })) };
+}
+
+function cellHtml(s: Slot): string {
+  if (s.kind === 'rest') return '<i>𝄽</i>';
+  if (s.kind === 'hold') return '<i>–</i>';
+  const g = s.grace === 'flam' ? 'fl' : s.grace === 'drag' ? 'dr' : '';
+  const r = s.roll === 'diddle' ? '/' : s.roll === 'buzz' ? 'z' : '';
+  return `<small>${s.accent ? '&gt;' : '&nbsp;'}</small><b>${s.hand}</b><small>${g}${g && r ? ' ' : ''}${r}&nbsp;</small>`;
+}
+
+function cellLabel(s: Slot): string {
+  if (s.kind !== 'note') return s.kind;
+  return [s.hand, s.accent && 'accent', s.grace, s.roll].filter(Boolean).join(' ');
+}

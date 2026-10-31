@@ -1,0 +1,41 @@
+x-node: &node
+  image: node:22-alpine
+  working_dir: /app
+  user: "1000:1000"
+  environment:
+    npm_config_cache: /npm-cache
+  volumes:
+    - .:/app
+    - node_modules:/app/node_modules
+    - npm_cache:/npm-cache
+  depends_on:
+    init:
+      condition: service_completed_successfully
+
+services:
+  init:
+    image: node:22-alpine
+    volumes:
+      - node_modules:/app/node_modules
+      - npm_cache:/npm-cache
+    command: chown 1000:1000 /app/node_modules /npm-cache
+
+  dev:
+    <<: *node
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+  build:
+    <<: *node
+    command: sh -c "npm install && npm run build"
+
+  preview:
+    <<: *node
+    ports:
+      - "4173:4173"
+    command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0"
+
+volumes:
+  node_modules:
+  npm_cache:
