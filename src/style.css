@@ -95,7 +95,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 .layout {
   flex: 1;
   display: grid;
-  grid-template-columns: 290px 1fr;
+  grid-template-columns: 320px 1fr;
   min-height: 0;
 }
 
@@ -107,7 +107,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
   flex-direction: column;
 }
 .lib-actions { display: flex; gap: 6px; padding: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
-.lib-actions button { flex: 1; padding: 6px 8px; font-size: 14px; }
+.lib-actions button { flex: 1 1 auto; padding: 6px 8px; font-size: 14px; white-space: nowrap; }
 .lib-list { padding: 4px 0 24px; }
 .lib-list details { padding: 0 8px; }
 .lib-list summary {
