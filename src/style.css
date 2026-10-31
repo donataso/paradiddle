@@ -183,6 +183,17 @@ main {
   transition: transform 50ms linear;
 }
 
+.pulse {
+  position: absolute;
+  left: -3px;
+  top: 19px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  pointer-events: none;
+}
+
 .editor {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -286,7 +297,11 @@ main {
   border-color: var(--accent);
   color: var(--accent-ink);
   flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
 }
+.play svg { width: 26px; height: 26px; display: block; }
 .tempo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1 1 360px; }
 .tempo button { min-width: 44px; padding: 8px 6px; font-variant-numeric: tabular-nums; }
 .bpm { display: flex; align-items: center; gap: 4px; font-size: 18px; }

@@ -16,6 +16,18 @@ export interface NotePos {
   el?: SVGElement;
 }
 
+export interface Anchor {
+  q: number;
+  x: number;
+  y: number;
+  line: number;
+}
+
+export interface Sheet {
+  notes: NotePos[];
+  anchors: Anchor[];
+}
+
 const BEAMS: Record<string, number> = { '8': 1, '16': 2, '32': 3, '64': 4 };
 
 class StemMark extends Tremolo {
@@ -47,6 +59,8 @@ interface Built {
   beams: Beam[];
   tuplets: Tuplet[];
   play: StaveNote[];
+  starts: { note: StaveNote; q: number }[];
+  lenQ: number;
 }
 
 function sticking(s: Slot): string {
@@ -82,6 +96,8 @@ function build(measure: Measure, time: TimeSig): Built {
   const tuplets: Tuplet[] = [];
   const play: StaveNote[] = [];
   const pendingTuplets: { notes: StaveNote[]; num: number; occ: number }[] = [];
+  const starts: { note: StaveNote; q: number }[] = [];
+  let q = 0;
   for (const beat of measure) {
     let run: StaveNote[] = [];
     const flush = () => {
@@ -89,8 +105,11 @@ function build(measure: Measure, time: TimeSig): Built {
       run = [];
     };
     for (const group of layoutBeat(beat)) {
+      const ratio = group.tuplet ? group.tuplet.occ / group.tuplet.num : 1;
       const notes = group.notes.map(n => {
         const sn = makeNote(n.dur, n.rest, n.slot);
+        starts.push({ note: sn, q });
+        q += n.dur.value * 4 * ratio;
         if (n.slot) play.push(sn);
         if (!n.rest && BEAMABLE.has(durationCode(n.dur).code)) run.push(sn);
         else flush();
@@ -105,7 +124,7 @@ function build(measure: Measure, time: TimeSig): Built {
     tuplets.push(new Tuplet(t.notes, { numNotes: t.num, notesOccupied: t.occ, ratioed: false }));
   }
   const voice = new Voice({ numBeats: time.num, beatValue: time.den }).setMode(Voice.Mode.SOFT).addTickables(tickables);
-  return { voice, beams, tuplets, play };
+  return { voice, beams, tuplets, play, starts, lenQ: q };
 }
 
 function minWidth(measure: Measure, time: TimeSig): number {
@@ -117,7 +136,7 @@ function hideLines(stave: Stave) {
   stave.setConfigForLines([0, 1, 2, 3, 4].map(i => ({ visible: i === 2 })));
 }
 
-export function renderSheet(host: HTMLElement, measures: Measure[], time: TimeSig): NotePos[] {
+export function renderSheet(host: HTMLElement, measures: Measure[], time: TimeSig): Sheet {
   host.querySelector('svg')?.remove();
   const width = Math.max(260, host.clientWidth);
   const avail = width - 2 * MARGIN;
@@ -146,6 +165,8 @@ export function renderSheet(host: HTMLElement, measures: Measure[], time: TimeSi
   ctx.setStrokeStyle('currentColor');
 
   const positions: NotePos[] = [];
+  const anchors: Anchor[] = [];
+  let measureQ = 0;
   lines.forEach((line, li) => {
     const widths = line.map((mi, k) => natural[mi] + extra(mi, k === 0));
     const total = widths.reduce((a, b) => a + b, 0);
@@ -169,8 +190,8 @@ export function renderSheet(host: HTMLElement, measures: Measure[], time: TimeSi
       b.voice.draw(ctx, stave);
       b.beams.forEach(beam => beam.setContext(ctx).draw());
       b.tuplets.forEach(t => t.setContext(ctx).draw());
-      const top = stave.getYForLine(0) - 28;
-      const bottom = stave.getYForLine(4) + 26;
+      const top = Math.min(stave.getYForLine(0), ...b.play.map(n => n.getStemExtents().topY)) - 18;
+      const bottom = stave.getYForLine(4) + 34;
       for (const n of b.play) {
         positions.push({
           x: (n.getNoteHeadBeginX() + n.getNoteHeadEndX()) / 2,
@@ -179,8 +200,14 @@ export function renderSheet(host: HTMLElement, measures: Measure[], time: TimeSi
           el: n.getSVGElement() ?? undefined,
         });
       }
+      const mid = stave.getYForLine(2);
+      for (const s of b.starts) {
+        anchors.push({ q: measureQ + s.q, x: (s.note.getNoteHeadBeginX() + s.note.getNoteHeadEndX()) / 2, y: mid, line: li });
+      }
+      measureQ += b.lenQ;
+      if (k === line.length - 1) anchors.push({ q: measureQ, x: stave.getNoteEndX(), y: mid, line: li });
       x += w;
     });
   });
-  return positions;
+  return { notes: positions, anchors };
 }

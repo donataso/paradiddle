@@ -26,7 +26,8 @@ export interface PlayerOptions {
 
 type Item =
   | { q: number; type: 'note'; note: TNote }
-  | { q: number; type: 'click'; beat: TBeat; level: 'accent' | 'normal' | 'sub' };
+  | { q: number; type: 'click'; beat: TBeat; level: 'accent' | 'normal' | 'sub' }
+  | { q: number; type: 'pulse' };
 
 interface Segment {
   count: boolean;
@@ -41,6 +42,7 @@ const LEVEL = { accent: 1, tap: 0.42, grace: 0.22, buzz: 0.3 };
 
 export class Player {
   onNote?: (index: number) => void;
+  onPulse?: (q: number) => void;
   onBeat?: (beat: TBeat, count: boolean) => void;
   onTempo?: (bpm: number) => void;
   onLoop?: (loops: number) => void;
@@ -150,7 +152,10 @@ export class Player {
 
   private loopSegment(): Segment {
     const items: Item[] = [];
-    if (this.notesOn) for (const note of this.tl.notes) items.push({ q: note.q, type: 'note', note });
+    if (this.notesOn) {
+      for (const note of this.tl.notes) items.push({ q: note.q, type: 'note', note });
+      for (const q of this.tl.pulses) items.push({ q, type: 'pulse' });
+    }
     if (this.opts.click || !this.notesOn) this.clicks(this.tl.beats, items);
     return { count: false, lenQ: this.tl.lenQ, items: items.sort((a, b) => a.q - b.q) };
   }
@@ -189,7 +194,8 @@ export class Player {
       if (t > horizon) break;
       this.idx++;
       if (it.type === 'note') this.playNote(it.note, t);
-      else this.playClick(it, t);
+      else if (it.type === 'click') this.playClick(it, t);
+      else this.visual(t, () => this.onPulse?.(it.q));
     }
   }
 
