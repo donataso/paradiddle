@@ -79,8 +79,11 @@
       </section>
 
       <section class="transport">
-        <button id="playBtn" class="play" aria-label="Play"></button>
-        <div class="tempo">
+        <div class="tempo-row">
+          <button id="playBtn" class="play" aria-label="Play"></button>
+          <input id="tempoRange" type="range" data-i18n-aria="tempo">
+        </div>
+        <div class="tempo-mods">
           <button data-tempo-mul="0.5">÷2</button>
           <button data-tempo="-10">−10</button>
           <button data-tempo="-5">−5</button>
@@ -88,7 +91,18 @@
           <button data-tempo="5">+5</button>
           <button data-tempo="10">+10</button>
           <button data-tempo-mul="2">×2</button>
-          <input id="tempoRange" type="range" data-i18n-aria="tempo">
+        </div>
+        <div class="tempo-pct-row">
+          <div class="tempo-pct" role="group">
+            <button data-pct="50" aria-pressed="false">50%</button>
+            <button data-pct="75" aria-pressed="false">75%</button>
+            <button data-pct="85" aria-pressed="false">85%</button>
+            <button data-pct="95" aria-pressed="false">95%</button>
+            <button data-pct="100" aria-pressed="true">100%</button>
+            <button data-pct="105" aria-pressed="false">105%</button>
+            <button data-pct="115" aria-pressed="false">115%</button>
+          </div>
+          <output id="scaledTempo" class="bpm-scaled"></output>
         </div>
       </section>
 

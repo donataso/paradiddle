@@ -313,17 +313,17 @@ main {
 
 .transport {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 12px 14px;
 }
+.tempo-row { display: flex; align-items: center; gap: 16px; flex-wrap: nowrap; }
 .play {
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   font-size: 22px;
   background: var(--accent);
@@ -335,11 +335,25 @@ main {
   padding: 0;
 }
 .play svg { width: 26px; height: 26px; display: block; }
-.tempo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1 1 360px; }
-.tempo button { min-width: 44px; padding: 8px 6px; font-variant-numeric: tabular-nums; }
-.bpm { display: flex; align-items: center; gap: 4px; font-size: 18px; }
-.bpm input { width: 3.6em; font-size: 20px; font-weight: 600; text-align: center; }
-.tempo input[type="range"] { flex: 1 1 140px; min-width: 120px; }
+.bpm { display: flex; align-items: center; gap: 4px; font-size: 18px; flex: none; }
+.bpm input { width: 3.6em; font-size: 20px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.tempo-row input[type="range"] { flex: 1 1 60px; min-width: 40px; align-self: center; }
+.tempo-mods { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tempo-mods button { min-width: 44px; padding: 8px 6px; font-variant-numeric: tabular-nums; }
+.tempo-pct-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tempo-pct { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.tempo-pct button {
+  min-width: 44px;
+  padding: 8px 6px;
+  font-variant-numeric: tabular-nums;
+  border: none;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+}
+.tempo-pct button:last-child { border-right: none; }
+.tempo-pct button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.bpm-scaled { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .status { display: flex; flex-direction: row; align-items: center; gap: 10px; min-width: 0; }
 .beats { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 0; min-height: 12px; }
 .beats:empty { display: none; }
@@ -427,9 +441,10 @@ body:not(.metro-mode) .metro-time { display: none; }
     z-index: 2;
     gap: 10px;
   }
-  .tempo { flex: 1 1 245px; gap: 4px; justify-content: center; }
-  .tempo button { min-width: 38px; padding: 8px 4px; }
-  .tempo input[type="range"] { flex-basis: 100%; }
+  .tempo-row { gap: 4px; }
+  .tempo-mods { gap: 4px; justify-content: center; }
+  .tempo-pct-row { justify-content: center; }
+  .tempo-mods button, .tempo-pct button { min-width: 38px; padding: 8px 4px; }
   .play { width: 48px; height: 48px; }
   .titlebar h2 { font-size: 19px; }
   .cell { width: 34px; height: 48px; }

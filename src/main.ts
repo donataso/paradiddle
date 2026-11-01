@@ -71,6 +71,8 @@ const player = new Player({
   trainer: settings.trainer,
 });
 player.tempo = settings.tempo;
+let baseTempo = settings.tempo;
+let pct = 100;
 
 const editor = new Editor($('editor'), { delete: $('edDeleteBtn'), cancel: $('edCancelBtn'), save: $('edSaveBtn') }, {
   change(r, measures) {
@@ -108,7 +110,7 @@ function findRudiment(id: string): Rudiment | undefined {
 }
 
 function persist() {
-  Object.assign(settings, player.opts, { tempo: player.tempo, current: current.id, mode, libTab });
+  Object.assign(settings, player.opts, { tempo: baseTempo, current: current.id, mode, libTab });
   saveSettings(settings);
 }
 
@@ -473,6 +475,7 @@ player.onBeat = (beat, count, step) => {
 };
 player.onLoop = trainerStatus;
 player.onTempo = () => {
+  if (pct === 100) baseTempo = player.tempo;
   updateTempo();
   persist();
 };
@@ -521,9 +524,20 @@ document.addEventListener('keydown', e => {
   $('playBtn').click();
 });
 
+function scaledTempo() {
+  return Math.round(baseTempo * (pct / 100));
+}
+
+function applyBase(bpm: number) {
+  baseTempo = Math.max(TEMPO_MIN, Math.min(TEMPO_MAX, Math.round(bpm) || baseTempo));
+  player.setTempo(scaledTempo());
+  updateTempo();
+}
+
 function updateTempo() {
-  input('tempoInput').value = String(player.tempo);
-  input('tempoRange').value = String(player.tempo);
+  input('tempoInput').value = String(baseTempo);
+  input('tempoRange').value = String(baseTempo);
+  $('scaledTempo').textContent = `${player.tempo} (${pct}%)`;
 }
 
 for (const el of [input('tempoInput'), input('tempoRange')]) {
@@ -531,14 +545,20 @@ for (const el of [input('tempoInput'), input('tempoRange')]) {
   el.max = String(TEMPO_MAX);
 }
 document.querySelectorAll<HTMLButtonElement>('[data-tempo]').forEach(b =>
-  b.addEventListener('click', () => player.setTempo(player.tempo + Number(b.dataset.tempo))));
+  b.addEventListener('click', () => applyBase(baseTempo + Number(b.dataset.tempo))));
 document.querySelectorAll<HTMLButtonElement>('[data-tempo-mul]').forEach(b =>
-  b.addEventListener('click', () => player.setTempo(player.tempo * Number(b.dataset.tempoMul))));
-input('tempoInput').addEventListener('change', e => {
-  player.setTempo(Number((e.target as HTMLInputElement).value) || player.tempo);
-  updateTempo();
-});
-input('tempoRange').addEventListener('input', e => player.setTempo(Number((e.target as HTMLInputElement).value)));
+  b.addEventListener('click', () => applyBase(baseTempo * Number(b.dataset.tempoMul))));
+input('tempoInput').addEventListener('change', e => applyBase(Number((e.target as HTMLInputElement).value)));
+input('tempoRange').addEventListener('input', e => applyBase(Number((e.target as HTMLInputElement).value)));
+
+const pctBtns = document.querySelectorAll<HTMLButtonElement>('[data-pct]');
+pctBtns.forEach(b =>
+  b.addEventListener('click', () => {
+    pct = Number(b.dataset.pct);
+    pctBtns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    player.setTempo(scaledTempo());
+    updateTempo();
+  }));
 
 // i18n
 
