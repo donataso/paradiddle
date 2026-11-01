@@ -236,6 +236,7 @@ $('libList').addEventListener('click', e => {
     discardArm = undefined;
     closeEditor();
   }
+  if (mode === 'metronome') applyMode('rudiment');
   select(r);
   setDrawer(false);
 });
@@ -395,7 +396,6 @@ function fillMetro() {
   const t = settings.metro;
   input('mNum').value = String(t.num);
   $<HTMLSelectElement>('mDen').value = String(t.den);
-  $('mGroupsWrap').hidden = t.den !== 8;
   renderGroupPicker($('mGroups'), t.num, beatGroups(t), groupsChanged);
 }
 
@@ -532,6 +532,8 @@ for (const el of [input('tempoInput'), input('tempoRange')]) {
 }
 document.querySelectorAll<HTMLButtonElement>('[data-tempo]').forEach(b =>
   b.addEventListener('click', () => player.setTempo(player.tempo + Number(b.dataset.tempo))));
+document.querySelectorAll<HTMLButtonElement>('[data-tempo-mul]').forEach(b =>
+  b.addEventListener('click', () => player.setTempo(player.tempo * Number(b.dataset.tempoMul))));
 input('tempoInput').addEventListener('change', e => {
   player.setTempo(Number((e.target as HTMLInputElement).value) || player.tempo);
   updateTempo();

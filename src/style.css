@@ -427,7 +427,7 @@ body:not(.metro-mode) .metro-time { display: none; }
     z-index: 2;
     gap: 10px;
   }
-  .tempo { flex: 0 1 245px; gap: 4px; justify-content: center; }
+  .tempo { flex: 1 1 245px; gap: 4px; justify-content: center; }
   .tempo button { min-width: 38px; padding: 8px 4px; }
   .tempo input[type="range"] { flex-basis: 100%; }
   .play { width: 48px; height: 48px; }

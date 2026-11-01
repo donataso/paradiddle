@@ -140,11 +140,10 @@ export class Player {
 
   private clicks(beats: TBeat[], items: Item[]) {
     const sub = Math.max(1, this.opts.sub);
-    const unit = this.tl.unitQ;
-    const step = unit / sub;
     for (const beat of beats) {
       items.push({ q: beat.q, type: 'click', beat, level: beat.index === 0 ? 'accent' : 'normal' });
       beat.stepOffsets.forEach((off, u) => items.push({ q: beat.q + off, type: 'step', beat, step: u }));
+      const step = beat.lenQ / sub;
       if (sub > 1) for (let q = beat.q + step; q < beat.q + beat.lenQ - 1e-9; q += step) items.push({ q, type: 'click', beat, level: 'sub' });
     }
   }
