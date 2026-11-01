@@ -94,6 +94,39 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 .tabs button { border-color: transparent; background: none; }
 .tabs button[aria-selected="true"] { background: var(--sel); color: var(--accent); font-weight: 600; }
 
+.sponsor { position: relative; }
+.sponsor summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.sponsor summary::-webkit-details-marker { display: none; }
+.sponsor summary span:first-child, .heart { color: #db61a2; }
+.sponsor summary span:first-child { font-size: 16px; }
+.sponsor summary:hover, .sponsor[open] summary { background: var(--bg); color: var(--ink); }
+.sponsor-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+.sponsor-menu a { padding: 8px 10px; border-radius: 6px; color: var(--ink); text-decoration: none; }
+.sponsor-menu a:hover { background: var(--sel); color: var(--accent); }
+
 .layout {
   flex: 1;
   display: grid;
@@ -104,13 +137,15 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 .library {
   border-right: 1px solid var(--line);
   background: var(--panel);
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
+.lib-about { display: none; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); line-height: 1.7; }
+.lib-about a { color: var(--ink); }
 .lib-actions { display: flex; gap: 6px; padding: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
 .lib-actions button { flex: 1 1 auto; padding: 6px 8px; font-size: 14px; white-space: nowrap; }
-.lib-list { padding: 4px 0 24px; }
+.lib-list { padding: 4px 0 24px; flex: 1; min-height: 0; overflow-y: auto; }
 .lib-list details { padding: 0 8px; }
 .lib-list summary {
   cursor: pointer;
@@ -373,6 +408,8 @@ main {
   .topbar { padding: 6px 8px; gap: 6px; }
   .topbar h1 { font-size: 17px; }
   .byline { display: none; }
+  .sponsor { display: none; }
+  .lib-about { display: block; }
   .tabs button { padding: 6px 8px; }
   .transport {
     position: sticky;

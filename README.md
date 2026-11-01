@@ -1,6 +1,13 @@
 # Paradiddle
 
+### :heart: If this project is useful to you, consider supporting it
+
+[![Sponsor on GitHub](https://img.shields.io/badge/GitHub-Sponsor-ea4aaa.svg?logo=githubsponsors)](https://github.com/sponsors/donataso)
+[![PayPal.me](https://img.shields.io/badge/PayPal.me-donataso-blue.svg?logo=paypal)](http://paypal.me/donataso)
+
 Drum rudiments trainer.
+
+**Open the app:** https://donataso.github.io/paradiddle/
 
 ## Features
 
