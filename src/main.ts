@@ -560,13 +560,22 @@ function pctTickStep() {
 
 function renderPctTicks() {
   const step = pctTickStep();
-  input('pctRange').step = String(step);
+  const bound = Math.floor(50 / step) * step;
+  const el = input('pctRange');
+  el.min = String(-bound);
+  el.max = String(bound);
+  const snapped = Math.min(bound, Math.max(-bound, Math.round(Number(el.value) / step) * step));
+  el.value = String(snapped);
+  pct = 100 + snapped;
+  player.setTempo(scaledTempo());
+  updateTempo();
+
   const ticks: number[] = [];
-  for (let v = -50; v <= 50; v++) if (v % step === 0) ticks.push(v);
+  for (let v = -bound; v <= bound; v++) if (v % step === 0) ticks.push(v);
   const THUMB = 18;
   $('pctTicks').innerHTML = ticks
     .map(v => {
-      const frac = (v + 50) / 100;
+      const frac = (v + bound) / (2 * bound);
       return `<span class="pct-tick${v === 0 ? ' center' : ''}" style="left:calc(${THUMB / 2}px + ${frac} * (100% - ${THUMB}px))"></span>`;
     })
     .join('');
@@ -575,7 +584,10 @@ renderPctTicks();
 window.addEventListener('resize', renderPctTicks);
 
 input('pctRange').addEventListener('input', e => {
-  pct = 100 + Number((e.target as HTMLInputElement).value);
+  const el = e.target as HTMLInputElement;
+  const snapped = Math.round(Number(el.value) / pctTickStep()) * pctTickStep();
+  el.value = String(snapped);
+  pct = 100 + snapped;
   player.setTempo(scaledTempo());
   updateTempo();
 });
