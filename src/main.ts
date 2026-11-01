@@ -430,7 +430,7 @@ $('playBtn').addEventListener('click', async () => {
   await player.start(timeline(), mode === 'rudiment');
   $('playBtn').innerHTML = STOP_ICON;
   $('playBtn').setAttribute('aria-label', 'Stop');
-  trainerStatus(0);
+  setStatus('');
   requestWakeLock();
 });
 

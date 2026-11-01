@@ -361,7 +361,7 @@ main {
 .bpm { display: flex; align-items: center; gap: 4px; font-size: 18px; }
 .bpm input { width: 3.6em; font-size: 20px; font-weight: 600; text-align: center; }
 .tempo input[type="range"] { flex: 1 1 140px; min-width: 120px; }
-.status { display: flex; flex-direction: column; gap: 4px; min-width: 120px; }
+.status { display: flex; flex-direction: row; align-items: center; gap: 10px; min-width: 120px; flex: 1 1 100%; order: 2; }
 .beats { display: flex; gap: 6px; }
 .beats .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); }
 .beats .dot.first { border-color: var(--accent); }
@@ -442,7 +442,8 @@ body:not(.metro-mode) .metro-time { display: none; }
     z-index: 2;
     gap: 10px;
   }
-  .tempo { flex-basis: 100%; order: 3; justify-content: space-between; }
+  .tempo { flex: 0 1 245px; gap: 4px; justify-content: center; }
+  .tempo button { min-width: 38px; padding: 8px 4px; }
   .tempo input[type="range"] { flex-basis: 100%; }
   .play { width: 48px; height: 48px; }
   .titlebar h2 { font-size: 19px; }

@@ -159,7 +159,7 @@ export class Player {
       for (const note of this.tl.notes) items.push({ q: note.q, type: 'note', note });
       for (const q of this.tl.pulses) items.push({ q, type: 'pulse' });
     }
-    if (!this.notesOn) this.clicks(this.tl.beats, items);
+    this.clicks(this.tl.beats, items);
     return { count: false, lenQ: this.tl.lenQ, items: items.sort((a, b) => a.q - b.q) };
   }
 
@@ -204,12 +204,12 @@ export class Player {
   }
 
   private playClick(it: Extract<Item, { type: 'click' }>, t: number) {
-    const gain = it.level === 'sub' ? 0.45 : it.level === 'accent' ? 1 : 0.75;
-    playVoice(this.ctx!, this.clickGain!, this.opts.clickVoice, t, gain, it.level);
-    if (it.level !== 'sub') {
-      const count = this.seg.count;
-      this.visual(t, () => this.onBeat?.(it.beat, count));
+    const count = this.seg.count;
+    if (count || !this.notesOn) {
+      const gain = it.level === 'sub' ? 0.45 : it.level === 'accent' ? 1 : 0.75;
+      playVoice(this.ctx!, this.clickGain!, this.opts.clickVoice, t, gain, it.level);
     }
+    if (it.level !== 'sub') this.visual(t, () => this.onBeat?.(it.beat, count));
   }
 
   private playNote(n: TNote, t: number) {
