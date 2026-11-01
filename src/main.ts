@@ -537,7 +537,8 @@ function applyBase(bpm: number) {
 function updateTempo() {
   input('tempoInput').value = String(baseTempo);
   input('tempoRange').value = String(baseTempo);
-  $('scaledTempo').textContent = `${player.tempo} (${pct}%)`;
+  $('scaledTempoBpm').textContent = String(player.tempo);
+  $('scaledTempoPct').textContent = `(${pct}%)`;
 }
 
 for (const el of [input('tempoInput'), input('tempoRange')]) {
@@ -551,14 +552,33 @@ document.querySelectorAll<HTMLButtonElement>('[data-tempo-mul]').forEach(b =>
 input('tempoInput').addEventListener('change', e => applyBase(Number((e.target as HTMLInputElement).value)));
 input('tempoRange').addEventListener('input', e => applyBase(Number((e.target as HTMLInputElement).value)));
 
-const pctBtns = document.querySelectorAll<HTMLButtonElement>('[data-pct]');
-pctBtns.forEach(b =>
-  b.addEventListener('click', () => {
-    pct = Number(b.dataset.pct);
-    pctBtns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    player.setTempo(scaledTempo());
-    updateTempo();
-  }));
+function pctTickStep() {
+  if (window.matchMedia('(min-width: 900px)').matches) return 5;
+  if (window.matchMedia('(min-width: 561px)').matches) return 10;
+  return 15;
+}
+
+function renderPctTicks() {
+  const step = pctTickStep();
+  input('pctRange').step = String(step);
+  const ticks: number[] = [];
+  for (let v = -50; v <= 50; v++) if (v % step === 0) ticks.push(v);
+  const THUMB = 18;
+  $('pctTicks').innerHTML = ticks
+    .map(v => {
+      const frac = (v + 50) / 100;
+      return `<span class="pct-tick${v === 0 ? ' center' : ''}" style="left:calc(${THUMB / 2}px + ${frac} * (100% - ${THUMB}px))"></span>`;
+    })
+    .join('');
+}
+renderPctTicks();
+window.addEventListener('resize', renderPctTicks);
+
+input('pctRange').addEventListener('input', e => {
+  pct = 100 + Number((e.target as HTMLInputElement).value);
+  player.setTempo(scaledTempo());
+  updateTempo();
+});
 
 // i18n
 

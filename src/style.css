@@ -13,6 +13,7 @@
   --accent-ink: #ffffff;
   --sel: #fbe6dc;
   --radius: 10px;
+  --outer-bg: #e5e2db;
   color-scheme: light;
 }
 
@@ -27,6 +28,7 @@
     --accent: #f07a4a;
     --accent-ink: #161514;
     --sel: #3b2a22;
+    --outer-bg: #2a2927;
     color-scheme: dark;
   }
 }
@@ -34,6 +36,7 @@
 * { box-sizing: border-box; }
 
 html, body { margin: 0; height: 100%; }
+html { background: var(--outer-bg); }
 
 body {
   background: var(--bg);
@@ -41,6 +44,9 @@ body {
   font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   display: flex;
   flex-direction: column;
+  max-width: 1400px;
+  margin: 0 auto;
+  border-right: 1px solid var(--line);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -320,7 +326,9 @@ main {
   border-radius: var(--radius);
   padding: 12px 14px;
 }
-.tempo-row { display: flex; align-items: center; gap: 16px; flex-wrap: nowrap; }
+.bpm-row { display: flex; align-items: center; gap: 12px; }
+.bpm-row input[type="range"] { flex: 1; min-width: 0; }
+.tempo-row { display: flex; align-items: center; gap: 16px; flex-wrap: nowrap; max-width: 700px; margin: 0 auto; width: 100%; }
 .play {
   width: 48px;
   height: 48px;
@@ -337,23 +345,45 @@ main {
 .play svg { width: 26px; height: 26px; display: block; }
 .bpm { display: flex; align-items: center; gap: 4px; font-size: 18px; flex: none; }
 .bpm input { width: 3.6em; font-size: 20px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
-.tempo-row input[type="range"] { flex: 1 1 60px; min-width: 40px; align-self: center; }
-.tempo-mods { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tempo-mods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .tempo-mods button { min-width: 44px; padding: 8px 6px; font-variant-numeric: tabular-nums; }
-.tempo-pct-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.tempo-pct { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.tempo-pct button {
-  min-width: 44px;
-  padding: 8px 6px;
-  font-variant-numeric: tabular-nums;
-  border: none;
-  border-right: 1px solid var(--line);
-  border-radius: 0;
-  background: none;
+.pct-range-wrap { position: relative; flex: 1; min-width: 60px; padding-bottom: 8px; }
+.pct-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+  display: block;
 }
-.tempo-pct button:last-child { border-right: none; }
-.tempo-pct button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-.bpm-scaled { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pct-range::-webkit-slider-runnable-track { height: 4px; background: var(--line); border-radius: 2px; }
+.pct-range::-moz-range-track { height: 4px; background: var(--line); border-radius: 2px; }
+.pct-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+.pct-range::-moz-range-thumb { width: 18px; height: 18px; border: none; border-radius: 50%; background: var(--accent); cursor: pointer; }
+.pct-ticks { position: absolute; left: 0; right: 0; top: 100%; height: 8px; pointer-events: none; }
+.pct-tick {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 5px;
+  background: var(--line);
+  transform: translateX(-50%);
+}
+.pct-tick.center { width: 2px; height: 8px; background: var(--ink); opacity: 0.6; border-radius: 1px; }
+.bpm-scaled { flex: none; width: 130px; font-variant-numeric: tabular-nums; }
+.bpm-scaled #scaledTempoBpm { font-size: 28px; font-weight: 700; color: var(--ink); }
+.bpm-scaled #scaledTempoPct { font-size: 14px; color: var(--muted); }
 .status { display: flex; flex-direction: row; align-items: center; gap: 10px; min-width: 0; }
 .beats { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 0; min-height: 12px; }
 .beats:empty { display: none; }
@@ -454,8 +484,7 @@ body:not(.metro-mode) .metro-time { display: none; }
   }
   .tempo-row { gap: 4px; }
   .tempo-mods { gap: 4px; justify-content: center; }
-  .tempo-pct-row { justify-content: center; }
-  .tempo-mods button, .tempo-pct button { min-width: 38px; padding: 8px 4px; }
+  .tempo-mods button { min-width: 38px; padding: 8px 4px; }
   .play { width: 48px; height: 48px; }
   .titlebar h2 { font-size: 19px; }
   .cell { width: 34px; height: 48px; }

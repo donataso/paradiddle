@@ -78,35 +78,33 @@
         <div id="bigBeats" class="big-beats"><div id="bigBeatsDots" class="big-beats-dots"></div></div>
       </section>
 
-      <section class="transport">
+      <section class="transport play-panel">
         <div class="tempo-row">
           <button id="playBtn" class="play" aria-label="Play"></button>
-          <input id="tempoRange" type="range" data-i18n-aria="tempo">
-        </div>
-        <div class="tempo-mods">
-          <button data-tempo-mul="0.5">÷2</button>
-          <button data-tempo="-10">−10</button>
-          <button data-tempo="-5">−5</button>
-          <label class="bpm"><input id="tempoInput" type="number" inputmode="numeric" data-i18n-aria="tempoBpm" data-i18n-title="tempoBpm"></label>
-          <button data-tempo="5">+5</button>
-          <button data-tempo="10">+10</button>
-          <button data-tempo-mul="2">×2</button>
-        </div>
-        <div class="tempo-pct-row">
-          <div class="tempo-pct" role="group">
-            <button data-pct="50" aria-pressed="false">50%</button>
-            <button data-pct="75" aria-pressed="false">75%</button>
-            <button data-pct="85" aria-pressed="false">85%</button>
-            <button data-pct="95" aria-pressed="false">95%</button>
-            <button data-pct="100" aria-pressed="true">100%</button>
-            <button data-pct="105" aria-pressed="false">105%</button>
-            <button data-pct="115" aria-pressed="false">115%</button>
+          <output id="scaledTempo" class="bpm-scaled"><span id="scaledTempoBpm"></span> <span id="scaledTempoPct"></span></output>
+          <div class="pct-range-wrap">
+            <input id="pctRange" class="pct-range" type="range" min="-50" max="50" step="5" value="0" data-i18n-aria="tempoPct">
+            <div id="pctTicks" class="pct-ticks" aria-hidden="true"></div>
           </div>
-          <output id="scaledTempo" class="bpm-scaled"></output>
         </div>
       </section>
 
       <section class="settings">
+        <div class="settings-group" role="group" aria-labelledby="grpBpm">
+          <div class="settings-legend" id="grpBpm" data-i18n="bpm"></div>
+          <div class="bpm-row">
+            <label class="bpm"><input id="tempoInput" type="number" inputmode="numeric" data-i18n-aria="tempoBpm" data-i18n-title="tempoBpm"></label>
+            <input id="tempoRange" type="range" data-i18n-aria="tempo">
+          </div>
+          <div class="tempo-mods">
+            <button data-tempo="5">+5</button>
+            <button data-tempo="10">+10</button>
+            <button data-tempo-mul="2">×2</button>
+            <button data-tempo="-5">−5</button>
+            <button data-tempo="-10">−10</button>
+            <button data-tempo-mul="0.5">÷2</button>
+          </div>
+        </div>
         <div class="settings-group" role="group" aria-labelledby="grpMetronome">
           <div class="settings-legend" id="grpMetronome" data-i18n="metronome"></div>
           <div class="metro-time">
