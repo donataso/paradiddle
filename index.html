@@ -107,8 +107,8 @@
       </section>
 
       <section class="settings">
-        <fieldset>
-          <legend data-i18n="metronome"></legend>
+        <div class="settings-group" role="group" aria-labelledby="grpMetronome">
+          <div class="settings-legend" id="grpMetronome" data-i18n="metronome"></div>
           <div class="metro-time">
             <label><span data-i18n="time"></span>
               <span><input id="mNum" type="number" min="1" max="32" inputmode="numeric"> /
@@ -128,16 +128,16 @@
               <option value="7" data-i18n="subPerBeat" data-i18n-vars='{"n":7}'></option>
             </select>
           </label>
-        </fieldset>
-        <fieldset>
-          <legend data-i18n="sounds"></legend>
+        </div>
+        <div class="settings-group" role="group" aria-labelledby="grpSounds">
+          <div class="settings-legend" id="grpSounds" data-i18n="sounds"></div>
           <label><span data-i18n="rudiment"></span> <select id="rudVoice"></select></label>
           <label><span data-i18n="volume"></span> <input id="rudVol" type="range" min="0" max="1" step="0.01"></label>
           <label><span data-i18n="click"></span> <select id="clickVoice"></select></label>
           <label><span data-i18n="volume"></span> <input id="clickVol" type="range" min="0" max="1" step="0.01"></label>
-        </fieldset>
-        <fieldset>
-          <legend data-i18n="speedTrainer"></legend>
+        </div>
+        <div class="settings-group" role="group" aria-labelledby="grpSpeedTrainer">
+          <div class="settings-legend" id="grpSpeedTrainer" data-i18n="speedTrainer"></div>
           <label class="check"><input id="trOn" type="checkbox"> <span data-i18n="enabled"></span></label>
           <div class="tr-grid">
             <label for="trStart" data-i18n="start"></label><input id="trStart" type="number" inputmode="numeric">
@@ -145,7 +145,7 @@
             <label for="trStep" data-i18n="step"></label><input id="trStep" type="number" min="1" inputmode="numeric">
             <label for="trEvery" data-i18n="every"></label><span class="tr-unit"><input id="trEvery" type="number" min="1" inputmode="numeric"> <span class="unit" data-i18n="loops"></span></span>
           </div>
-        </fieldset>
+        </div>
       </section>
     </main>
   </div>
