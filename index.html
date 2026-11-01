@@ -14,15 +14,15 @@
 </head>
 <body>
   <header class="topbar">
-    <button id="menuBtn" class="icon" aria-label="Rudiments list">☰</button>
+    <button id="menuBtn" class="icon" data-i18n-aria="rudimentsList">☰</button>
     <h1><a href="https://github.com/donataso/paradiddle" target="_blank" rel="noopener">Paradiddle</a></h1>
-    <span class="byline">by <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></span>
+    <span class="byline"><span data-i18n="by"></span> <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></span>
     <nav class="tabs" role="tablist">
-      <button role="tab" data-mode="rudiment" aria-selected="true">Rudiments</button>
-      <button role="tab" data-mode="metronome" aria-selected="false">Metronome</button>
+      <button role="tab" data-mode="rudiment" aria-selected="true" data-i18n="rudimentsTab"></button>
+      <button role="tab" data-mode="metronome" aria-selected="false" data-i18n="metronomeTab"></button>
     </nav>
     <details id="sponsor" class="sponsor">
-      <summary aria-label="Support"><span aria-hidden="true">♥</span><span class="sponsor-label">Support</span></summary>
+      <summary data-i18n-aria="support"><span aria-hidden="true">♥</span><span class="sponsor-label" data-i18n="support"></span></summary>
       <div class="sponsor-menu">
         <a href="http://paypal.me/donataso" target="_blank" rel="noopener">PayPal</a>
         <a href="https://github.com/sponsors/donataso" target="_blank" rel="noopener">GitHub</a>
@@ -33,17 +33,21 @@
   <div class="layout">
     <aside id="library" class="library">
       <div class="lib-about">
-        <div>by <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></div>
-        <div><span class="heart" aria-hidden="true">♥</span> Support:
+        <div><span data-i18n="by"></span> <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></div>
+        <div><span class="heart" aria-hidden="true">♥</span> <span data-i18n="supportColon"></span>
           <a href="http://paypal.me/donataso" target="_blank" rel="noopener">PayPal</a> ·
           <a href="https://github.com/sponsors/donataso" target="_blank" rel="noopener">GitHub</a>
         </div>
       </div>
       <div id="libList" class="lib-list"></div>
       <div class="lib-actions">
-        <button id="newBtn" class="icon-btn" data-icon="plus" title="New rudiment" aria-label="New rudiment"></button>
-        <button id="uploadBtn">Upload</button>
-        <button id="downloadAllBtn">Download all</button>
+        <button id="newBtn" class="icon-btn" data-icon="plus" data-i18n-title="newRudiment" data-i18n-aria="newRudiment"></button>
+        <button id="uploadBtn" data-i18n="upload"></button>
+        <button id="downloadAllBtn" data-i18n="downloadAll"></button>
+        <select id="langSel" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="de">DE</option>
+        </select>
         <input id="fileInput" type="file" accept=".json,application/json" hidden>
       </div>
     </aside>
@@ -57,10 +61,10 @@
             <div id="rMeta" class="meta"></div>
           </div>
           <div class="title-actions">
-            <button id="copyBtn" class="icon-btn" data-icon="copy" title="Copy" aria-label="Copy"></button>
-            <button id="editBtn" class="icon-btn" data-icon="edit" title="Edit" aria-label="Edit"></button>
-            <button id="downloadBtn" class="icon-btn" data-icon="download" title="Download" aria-label="Download"></button>
-            <button id="deleteBtn" class="icon-btn danger" data-icon="trash" title="Delete" aria-label="Delete"></button>
+            <button id="copyBtn" class="icon-btn" data-icon="copy" data-i18n-title="copy" data-i18n-aria="copy"></button>
+            <button id="editBtn" class="icon-btn" data-icon="edit" data-i18n-title="edit" data-i18n-aria="edit"></button>
+            <button id="downloadBtn" class="icon-btn" data-icon="download" data-i18n-title="download" data-i18n-aria="download"></button>
+            <button id="deleteBtn" class="icon-btn danger" data-icon="trash" data-i18n-title="delete" data-i18n-aria="delete"></button>
           </div>
         </div>
         <div id="sheet" class="sheet"><div id="statusText" class="status-text"></div><div id="beats" class="beats"></div><div id="marker" class="marker" hidden></div></div>
@@ -76,51 +80,51 @@
         <div class="tempo">
           <button data-tempo="-10">−10</button>
           <button data-tempo="-5">−5</button>
-          <label class="bpm"><input id="tempoInput" type="number" inputmode="numeric" aria-label="Tempo (BPM)" title="Tempo (BPM)"></label>
+          <label class="bpm"><input id="tempoInput" type="number" inputmode="numeric" data-i18n-aria="tempoBpm" data-i18n-title="tempoBpm"></label>
           <button data-tempo="5">+5</button>
           <button data-tempo="10">+10</button>
-          <input id="tempoRange" type="range" aria-label="Tempo">
+          <input id="tempoRange" type="range" data-i18n-aria="tempo">
         </div>
       </section>
 
       <section class="settings">
         <fieldset>
-          <legend>Metronome</legend>
+          <legend data-i18n="metronome"></legend>
           <div class="metro-time">
-            <label>Time
+            <label><span data-i18n="time"></span>
               <span><input id="mNum" type="number" min="1" max="32" inputmode="numeric"> /
               <select id="mDen"><option>2</option><option>4</option><option>8</option><option>16</option></select></span>
             </label>
-            <label id="mGroupsWrap">Grouping <span id="mGroups" class="group-picker"></span></label>
+            <label id="mGroupsWrap"><span data-i18n="grouping"></span> <span id="mGroups" class="group-picker"></span></label>
           </div>
-          <label class="check"><input id="countIn" type="checkbox"> 1 bar count-in</label>
-          <label>Subdivision
+          <label class="check"><input id="countIn" type="checkbox"> <span data-i18n="countIn"></span></label>
+          <label><span data-i18n="subdivision"></span>
             <select id="subSel">
-              <option value="1">Off</option>
-              <option value="2">2 per beat</option>
-              <option value="3">3 per beat</option>
-              <option value="4">4 per beat</option>
-              <option value="5">5 per beat</option>
-              <option value="6">6 per beat</option>
-              <option value="7">7 per beat</option>
+              <option value="1" data-i18n="subOff"></option>
+              <option value="2" data-i18n="subPerBeat" data-i18n-vars='{"n":2}'></option>
+              <option value="3" data-i18n="subPerBeat" data-i18n-vars='{"n":3}'></option>
+              <option value="4" data-i18n="subPerBeat" data-i18n-vars='{"n":4}'></option>
+              <option value="5" data-i18n="subPerBeat" data-i18n-vars='{"n":5}'></option>
+              <option value="6" data-i18n="subPerBeat" data-i18n-vars='{"n":6}'></option>
+              <option value="7" data-i18n="subPerBeat" data-i18n-vars='{"n":7}'></option>
             </select>
           </label>
         </fieldset>
         <fieldset>
-          <legend>Sounds</legend>
-          <label>Rudiment <select id="rudVoice"></select></label>
-          <label>Volume <input id="rudVol" type="range" min="0" max="1" step="0.01"></label>
-          <label>Click <select id="clickVoice"></select></label>
-          <label>Volume <input id="clickVol" type="range" min="0" max="1" step="0.01"></label>
+          <legend data-i18n="sounds"></legend>
+          <label><span data-i18n="rudiment"></span> <select id="rudVoice"></select></label>
+          <label><span data-i18n="volume"></span> <input id="rudVol" type="range" min="0" max="1" step="0.01"></label>
+          <label><span data-i18n="click"></span> <select id="clickVoice"></select></label>
+          <label><span data-i18n="volume"></span> <input id="clickVol" type="range" min="0" max="1" step="0.01"></label>
         </fieldset>
         <fieldset>
-          <legend>Speed trainer</legend>
-          <label class="check"><input id="trOn" type="checkbox"> Enabled</label>
+          <legend data-i18n="speedTrainer"></legend>
+          <label class="check"><input id="trOn" type="checkbox"> <span data-i18n="enabled"></span></label>
           <div class="tr-grid">
-            <label for="trStart">Start</label><input id="trStart" type="number" inputmode="numeric">
-            <label for="trTarget">Target</label><input id="trTarget" type="number" inputmode="numeric">
-            <label for="trStep">Step</label><input id="trStep" type="number" min="1" inputmode="numeric">
-            <label for="trEvery">Every</label><span><input id="trEvery" type="number" min="1" inputmode="numeric"> loops</span>
+            <label for="trStart" data-i18n="start"></label><input id="trStart" type="number" inputmode="numeric">
+            <label for="trTarget" data-i18n="target"></label><input id="trTarget" type="number" inputmode="numeric">
+            <label for="trStep" data-i18n="step"></label><input id="trStep" type="number" min="1" inputmode="numeric">
+            <label for="trEvery" data-i18n="every"></label><span class="tr-unit"><input id="trEvery" type="number" min="1" inputmode="numeric"> <span class="unit" data-i18n="loops"></span></span>
           </div>
         </fieldset>
       </section>

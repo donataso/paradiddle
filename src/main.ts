@@ -6,6 +6,7 @@ import './style.css';
 import { Editor } from './editor';
 import { renderGroupPicker } from './groupPicker';
 import { confirmClick, disarm, fillIcons } from './icons';
+import { getLocale, setLocale, t } from './i18n';
 import { Measure, Rudiment, TimeSig, beatGroups, defaultGroups, parsePattern, timeLabel } from './model';
 import { NotePos, renderSheet } from './notation';
 import { Player, TEMPO_MAX, TEMPO_MIN, Trainer } from './player';
@@ -78,7 +79,7 @@ const editor = new Editor($('editor'), {
     persistCustom();
     closeEditor();
     select(saved);
-    toast('Saved');
+    toast(t('saved'));
   },
   cancel() {
     closeEditor();
@@ -92,7 +93,7 @@ function deleteRudiment(r: Rudiment) {
   persistCustom();
   closeEditor();
   select(BUILTINS[15]);
-  toast(`Deleted "${r.name}"`);
+  toast(t('deleted', { name: r.name }));
 }
 
 function findRudiment(id: string): Rudiment | undefined {
@@ -123,15 +124,20 @@ function renderLibrary() {
   const groups = new Map<string, Rudiment[]>();
   for (const c of CATEGORIES) groups.set(c, BUILTINS.filter(r => r.category === c));
   const customCats = [...new Set(custom.map(r => r.category))].sort();
-  const html = [...groups].map(([cat, list]) => groupHtml(cat, list, false));
-  for (const cat of customCats) html.push(groupHtml(cat, custom.filter(r => r.category === cat).sort((a, b) => a.name.localeCompare(b.name)), true));
+  const html = [...groups].map(([cat, list]) => groupHtml(cat, list));
+  for (const cat of customCats) html.push(groupHtml(cat, custom.filter(r => r.category === cat).sort((a, b) => a.name.localeCompare(b.name))));
   $('libList').innerHTML = html.join('');
-  $('catList').innerHTML = [...new Set([...CATEGORIES, ...customCats, 'Custom'])].map(c => `<option value="${esc(c)}">`).join('');
+  $('catList').innerHTML = [...new Set([...CATEGORIES, ...customCats, t('categoryCustom')])].map(c => `<option value="${esc(c)}">`).join('');
   markSelected();
 }
 
-function groupHtml(cat: string, list: Rudiment[], isCustom: boolean): string {
-  return `<details open><summary>${esc(cat)}${isCustom ? ' <span class="chip">custom</span>' : ''}</summary><ul>${
+function catLabel(cat: string): string {
+  if (cat === 'Custom') return t('categoryCustom');
+  return CATEGORIES.includes(cat) ? t(`cat:${cat}`) : cat;
+}
+
+function groupHtml(cat: string, list: Rudiment[]): string {
+  return `<details open><summary>${esc(catLabel(cat))}</summary><ul>${
     list.map(r => `<li><button data-id="${r.id}">${esc(r.name)}</button></li>`).join('')}</ul></details>`;
 }
 
@@ -153,7 +159,7 @@ $('libList').addEventListener('click', e => {
   if (!$('editor').hidden) {
     if (editor.dirty && !(discardArm?.id === r.id && Date.now() < discardArm.until)) {
       discardArm = { id: r.id, until: Date.now() + CONFIRM_MS };
-      return toast('Unsaved changes. Tap again to discard.');
+      return toast(t('unsavedDiscard'));
     }
     discardArm = undefined;
     closeEditor();
@@ -172,8 +178,8 @@ function select(r: Rudiment) {
 
 function showRudiment(r: Rudiment, measures: Measure[]) {
   shown = { rud: r, measures };
-  $('rTitle').textContent = r.name || 'Untitled';
-  $('rMeta').textContent = `${r.category} · ${timeLabel(r.time)}${r.builtin ? ' · PAS' : ''}`;
+  $('rTitle').textContent = r.name || t('untitled');
+  $('rMeta').textContent = `${catLabel(r.category)} · ${timeLabel(r.time)}${r.builtin ? ' · PAS' : ''}`;
   $('editBtn').hidden = !!r.builtin || !$('editor').hidden;
   $('copyBtn').hidden = !$('editor').hidden;
   $('downloadBtn').hidden = !$('editor').hidden;
@@ -231,12 +237,12 @@ function closeEditor() {
 
 $('newBtn').addEventListener('click', () => {
   setDrawer(false);
-  openEditor({ id: newId(), name: uniqueName('New rudiment', [...BUILTINS, ...custom]), category: 'Custom', time: { num: 2, den: 4 }, pattern: 'RLRL RLRL' }, true);
+  openEditor({ id: newId(), name: uniqueName(t('newRudimentName'), [...BUILTINS, ...custom]), category: t('categoryCustom'), time: { num: 2, den: 4 }, pattern: 'RLRL RLRL' }, true);
 });
 
 $('copyBtn').addEventListener('click', () => {
   const base = current.name.replace(/^\d+\.\s*/, '');
-  openEditor({ ...structuredClone(current), id: newId(), builtin: undefined, name: uniqueName(`${base} (copy)`, [...BUILTINS, ...custom]), category: current.builtin ? 'Custom' : current.category }, true);
+  openEditor({ ...structuredClone(current), id: newId(), builtin: undefined, name: uniqueName(`${base} (copy)`, [...BUILTINS, ...custom]), category: current.builtin ? t('categoryCustom') : current.category }, true);
 });
 
 $('editBtn').addEventListener('click', () => !current.builtin && openEditor(current, false));
@@ -248,7 +254,7 @@ $('deleteBtn').addEventListener('click', e => {
 });
 
 $('downloadAllBtn').addEventListener('click', () => {
-  if (!custom.length) return toast('No custom rudiments yet');
+  if (!custom.length) return toast(t('noCustomYet'));
   download(custom, 'paradiddle-rudiments.json');
 });
 
@@ -263,9 +269,9 @@ input('fileInput').addEventListener('change', async e => {
     const res = importRudiments(await file.text(), custom, BUILTINS);
     custom = res.list;
     persistCustom();
-    toast(`Imported ${res.added}${res.skipped ? `, skipped ${res.skipped}` : ''}`);
+    toast(t('imported', { added: res.added }) + (res.skipped ? t('importedSkipped', { skipped: res.skipped }) : ''));
   } catch {
-    toast('Invalid file');
+    toast(t('invalidFile'));
   }
 });
 
@@ -370,11 +376,11 @@ function setStatus(text: string) {
 }
 
 function trainerStatus(loops: number) {
-  const t = player.opts.trainer;
-  if (!t.on) return setStatus(`Loop ${loops}`);
-  const left = t.every - ((loops - 1) % t.every);
-  const done = player.tempo === t.target;
-  setStatus(done ? `Target ${t.target} reached` : `Loop ${loops} · next step in ${left}`);
+  const tr = player.opts.trainer;
+  if (!tr.on) return setStatus(t('loop', { n: loops }));
+  const left = tr.every - ((loops - 1) % tr.every);
+  const done = player.tempo === tr.target;
+  setStatus(done ? t('targetReached', { target: tr.target }) : t('loopNextStep', { n: loops, left }));
 }
 
 const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';
@@ -385,7 +391,7 @@ player.onNote = showMarker;
 player.onBeat = (beat, count, step) => {
   if (beat.index === 0 && step === 0 && !count) renderBeats();
   lightBeat(beat.index, step);
-  if (count && step === 0) setStatus(`Count-in ${beat.index + 1}`);
+  if (count && step === 0) setStatus(t('countInStatus', { n: beat.index + 1 }));
 };
 player.onLoop = trainerStatus;
 player.onTempo = () => {
@@ -394,7 +400,7 @@ player.onTempo = () => {
 };
 player.onStop = () => {
   $('playBtn').innerHTML = PLAY_ICON;
-  $('playBtn').setAttribute('aria-label', 'Play');
+  $('playBtn').setAttribute('aria-label', t('play'));
   clearMarker();
   lightBeat(-1, -1);
   setStatus('');
@@ -425,7 +431,7 @@ $('playBtn').addEventListener('click', async () => {
   if (mode === 'rudiment') renderBeats();
   await player.start(timeline(), mode === 'rudiment');
   $('playBtn').innerHTML = STOP_ICON;
-  $('playBtn').setAttribute('aria-label', 'Stop');
+  $('playBtn').setAttribute('aria-label', t('stop'));
   setStatus('');
   requestWakeLock();
 });
@@ -453,6 +459,27 @@ input('tempoInput').addEventListener('change', e => {
   updateTempo();
 });
 input('tempoRange').addEventListener('input', e => player.setTempo(Number((e.target as HTMLInputElement).value)));
+
+// i18n
+
+function applyI18n() {
+  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
+    const vars = el.dataset.i18nVars ? JSON.parse(el.dataset.i18nVars) : undefined;
+    el.textContent = t(el.dataset.i18n!, vars);
+  });
+  document.querySelectorAll<HTMLElement>('[data-i18n-title]').forEach(el => (el.title = t(el.dataset.i18nTitle!)));
+  document.querySelectorAll<HTMLElement>('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria!)));
+  $('playBtn').setAttribute('aria-label', t(player.playing ? 'stop' : 'play'));
+}
+
+$<HTMLSelectElement>('langSel').value = getLocale();
+$<HTMLSelectElement>('langSel').addEventListener('change', e => {
+  setLocale((e.target as HTMLSelectElement).value as 'en' | 'de');
+  applyI18n();
+  renderLibrary();
+  showRudiment(shown.rud, shown.measures);
+  fillMetro();
+});
 
 // Settings
 
@@ -501,6 +528,7 @@ function bindSettings() {
 // Init
 
 async function init() {
+  applyI18n();
   fillIcons();
   await document.fonts.load('30px Bravura').catch(() => undefined);
   bindSettings();

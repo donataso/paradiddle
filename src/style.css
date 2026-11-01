@@ -150,9 +150,10 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 }
 .lib-about { display: none; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); line-height: 1.7; }
 .lib-about a { color: var(--ink); }
-.lib-actions { display: flex; gap: 6px; padding: 12px 12px calc(12px + env(safe-area-inset-bottom)); flex-wrap: wrap; border-top: 1px solid var(--line); }
-.lib-actions button { flex: 1 1 auto; padding: 6px 8px; font-size: 14px; white-space: nowrap; }
-.lib-actions .icon-btn { flex: none; }
+.lib-actions { display: flex; gap: 6px; padding: 12px 12px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
+.lib-actions button { flex: 1 1 auto; min-width: 0; padding: 6px 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-actions .icon-btn { flex: none; padding: 6px 9px; min-width: 38px; min-height: 36px; }
+.lib-actions select { flex: none; padding: 6px 2px; font-size: 12px; }
 .lib-list { padding: 4px 0 24px; flex: 1; min-height: 0; overflow-y: auto; }
 .lib-list details { padding: 0 8px; }
 .lib-list summary {
@@ -296,7 +297,7 @@ main {
 .grow { flex: 1; }
 
 .metro-time { display: flex; gap: 16px; flex-wrap: wrap; }
-#mGroupsWrap { flex-basis: 100%; }
+#mGroupsWrap { flex-basis: 100%; margin-bottom: 8px; }
 .big-beats {
   position: relative;
   padding: 40px 14px;
@@ -386,7 +387,8 @@ main {
 .settings label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; }
 .tr-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; align-items: center; }
 .tr-grid label { font-size: 13px; color: var(--muted); }
-.tr-grid span { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.tr-grid .tr-unit { display: flex; align-items: center; gap: 6px; }
+.tr-grid .unit { font-size: 13px; color: var(--muted); }
 .group-picker { display: inline-flex; align-items: center; }
 .group-picker .gdot { width: 10px; height: 10px; margin-left: 4px; padding: 0; border-radius: 50%; border: 2px solid var(--line); background: none; cursor: pointer; }
 .group-picker .gdot:first-child { margin-left: 0; cursor: default; }

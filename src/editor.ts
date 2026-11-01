@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { confirmClick, disarm, fillIcons } from './icons';
+import { t } from './i18n';
 import { renderGroupPicker } from './groupPicker';
 import { Beat, DENOMINATORS, Frac, Hand, Measure, Rudiment, Slot, TimeSig, beatGroups, beatLengths, defaultGroups, parsePattern, serializePattern } from './model';
 
@@ -29,34 +30,34 @@ export class Editor {
   constructor(private root: HTMLElement, private hooks: EditorHooks) {
     root.innerHTML = `
       <div class="ed-fields">
-        <label class="ed-name">Name <input id="edName" maxlength="80"></label>
-        <label>Category <input id="edCat" list="catList" maxlength="40"></label>
-        <label class="ed-time">Time
+        <label class="ed-name">${t('name')} <input id="edName" maxlength="80"></label>
+        <label>${t('category')} <input id="edCat" list="catList" maxlength="40"></label>
+        <label class="ed-time">${t('time')}
           <span><input id="edNum" type="number" min="1" max="32" inputmode="numeric"> /
           <select id="edDen">${DENOMINATORS.map(d => `<option>${d}</option>`).join('')}</select></span>
         </label>
-        <label id="edGroupsWrap">Grouping <span id="edGroups" class="group-picker"></span></label>
+        <label id="edGroupsWrap">${t('grouping')} <span id="edGroups" class="group-picker"></span></label>
       </div>
       <div class="ed-tools" role="toolbar">
-        <button data-act="R" title="Right hand">R</button>
-        <button data-act="L" title="Left hand">L</button>
-        <button data-act="rest" title="Rest">Rest</button>
-        <button data-act="hold" title="Extend previous note">Hold</button>
+        <button data-act="R" title="${t('rightHand')}">R</button>
+        <button data-act="L" title="${t('leftHand')}">L</button>
+        <button data-act="rest" title="${t('rest')}">${t('rest')}</button>
+        <button data-act="hold" title="${t('extendPrevious')}">${t('hold')}</button>
         <span class="sep"></span>
-        <button data-act="accent" title="Accent">&gt; Accent</button>
-        <button data-act="flam" title="Flam">Flam</button>
-        <button data-act="drag" title="Drag">Drag</button>
-        <button data-act="diddle" title="Diddle (slash)">Diddle</button>
-        <button data-act="buzz" title="Buzz">Buzz</button>
+        <button data-act="accent" title="${t('accent')}">&gt; ${t('accent')}</button>
+        <button data-act="flam" title="${t('flam')}">${t('flam')}</button>
+        <button data-act="drag" title="${t('drag')}">${t('drag')}</button>
+        <button data-act="diddle" title="${t('diddleSlash')}">${t('diddle')}</button>
+        <button data-act="buzz" title="${t('buzz')}">${t('buzz')}</button>
       </div>
       <div class="ed-grid"></div>
       <div class="ed-error" role="alert"></div>
       <div class="ed-actions">
-        <button data-act="addMeasure">+ Measure</button>
+        <button data-act="addMeasure">${t('addMeasure')}</button>
         <span class="grow"></span>
-        <button data-act="delete" class="icon-btn danger" data-icon="trash" title="Delete" aria-label="Delete"></button>
-        <button data-act="cancel">Cancel</button>
-        <button data-act="save" class="icon-btn primary" data-icon="save" title="Save" aria-label="Save"></button>
+        <button data-act="delete" class="icon-btn danger" data-icon="trash" title="${t('delete')}" aria-label="${t('delete')}"></button>
+        <button data-act="cancel">${t('cancel')}</button>
+        <button data-act="save" class="icon-btn primary" data-icon="save" title="${t('save')}" aria-label="${t('save')}"></button>
       </div>`;
     fillIcons(root);
     root.addEventListener('click', e => {
@@ -166,7 +167,7 @@ export class Editor {
         break;
       }
       case 'save':
-        if (!this.draft.name.trim()) return this.error('Name is required');
+        if (!this.draft.name.trim()) return this.error(t('nameRequired'));
         if (!this.draft.category.trim()) this.draft.category = 'Custom';
         this.draft.name = this.draft.name.trim();
         this.draft.category = this.draft.category.trim();
@@ -218,8 +219,8 @@ export class Editor {
     const grid = $(this.root, '.ed-grid');
     grid.innerHTML = this.measures.map((m, mi) => `
       <div class="ed-measure">
-        <div class="ed-mhead"><span>Measure ${mi + 1}</span>
-          ${this.measures.length > 1 ? `<button data-act="removeMeasure" data-m="${mi}" title="Remove measure" aria-label="Remove measure ${mi + 1}">×</button>` : ''}
+        <div class="ed-mhead"><span>${t('measure', { n: mi + 1 })}</span>
+          ${this.measures.length > 1 ? `<button data-act="removeMeasure" data-m="${mi}" title="${t('removeMeasure')}" aria-label="${t('removeMeasureN', { n: mi + 1 })}">×</button>` : ''}
         </div>
         <div class="ed-beats">${m.map((b, bi) => this.beatHtml(b, mi, bi)).join('')}</div>
       </div>`).join('');
@@ -242,7 +243,7 @@ export class Editor {
       const sel = this.sel && this.sel.m === mi && this.sel.b === bi && this.sel.i === i;
       return `<button class="cell ${s.kind}${s.accent ? ' accent' : ''}${sel ? ' sel' : ''}" data-cell="${mi},${bi},${i}" aria-label="${cellLabel(s)}">${cellHtml(s)}</button>`;
     }).join('');
-    return `<div class="ed-beat"><select data-beat="${mi},${bi}" title="Notes in beat ${bi + 1}" aria-label="Notes in beat ${bi + 1}">${options}</select><div class="cells">${cells}</div></div>`;
+    return `<div class="ed-beat"><select data-beat="${mi},${bi}" title="${t('notesInBeat', { n: bi + 1 })}" aria-label="${t('notesInBeat', { n: bi + 1 })}">${options}</select><div class="cells">${cells}</div></div>`;
   }
 }
 
