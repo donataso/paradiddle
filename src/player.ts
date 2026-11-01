@@ -14,7 +14,6 @@ export interface Trainer {
 }
 
 export interface PlayerOptions {
-  click: boolean;
   sub: number;
   countIn: boolean;
   rudVoice: string;
@@ -160,7 +159,7 @@ export class Player {
       for (const note of this.tl.notes) items.push({ q: note.q, type: 'note', note });
       for (const q of this.tl.pulses) items.push({ q, type: 'pulse' });
     }
-    if (this.opts.click || !this.notesOn) this.clicks(this.tl.beats, items);
+    if (!this.notesOn) this.clicks(this.tl.beats, items);
     return { count: false, lenQ: this.tl.lenQ, items: items.sort((a, b) => a.q - b.q) };
   }
 

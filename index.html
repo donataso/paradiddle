@@ -68,13 +68,6 @@
       </section>
 
       <section id="metronomeView" hidden>
-        <div class="metro-time">
-          <label>Time
-            <span><input id="mNum" type="number" min="1" max="32" inputmode="numeric"> /
-            <select id="mDen"><option>2</option><option>4</option><option>8</option><option>16</option></select></span>
-          </label>
-          <label id="mGroupsWrap">Grouping <input id="mGroups" placeholder="2+2+3"></label>
-        </div>
         <div id="bigBeats" class="big-beats"></div>
       </section>
 
@@ -97,16 +90,23 @@
       <section class="settings">
         <fieldset>
           <legend>Metronome</legend>
-          <label class="check"><input id="clickOn" type="checkbox"> Click with rudiment</label>
+          <div class="metro-time">
+            <label>Time
+              <span><input id="mNum" type="number" min="1" max="32" inputmode="numeric"> /
+              <select id="mDen"><option>2</option><option>4</option><option>8</option><option>16</option></select></span>
+            </label>
+            <label id="mGroupsWrap">Grouping <input id="mGroups" placeholder="2+2+3"></label>
+          </div>
           <label class="check"><input id="countIn" type="checkbox"> 1 bar count-in</label>
-          <label>Subdivision
-            <select id="subSel">
-              <option value="1">Off</option>
-              <option value="2">2 per beat</option>
-              <option value="3">3 per beat</option>
-              <option value="4">4 per beat</option>
-            </select>
-          </label>
+          <div class="seg-group">
+            <span>Subdivision</span>
+            <div class="seg" id="subSel" role="radiogroup" aria-label="Subdivision">
+              <label class="check"><input type="radio" name="sub" value="1"> Off</label>
+              <label class="check"><input type="radio" name="sub" value="2"> 2</label>
+              <label class="check"><input type="radio" name="sub" value="3"> 3</label>
+              <label class="check"><input type="radio" name="sub" value="4"> 4</label>
+            </div>
+          </div>
         </fieldset>
         <fieldset>
           <legend>Sounds</legend>
@@ -118,13 +118,11 @@
         <fieldset>
           <legend>Speed trainer</legend>
           <label class="check"><input id="trOn" type="checkbox"> Enabled</label>
-          <div class="row">
-            <label>Start <input id="trStart" type="number" inputmode="numeric"></label>
-            <label>Target <input id="trTarget" type="number" inputmode="numeric"></label>
-          </div>
-          <div class="row">
-            <label>Step <input id="trStep" type="number" min="1" inputmode="numeric"></label>
-            <label>Every <input id="trEvery" type="number" min="1" inputmode="numeric"> loops</label>
+          <div class="tr-grid">
+            <label for="trStart">Start</label><input id="trStart" type="number" inputmode="numeric">
+            <label for="trTarget">Target</label><input id="trTarget" type="number" inputmode="numeric">
+            <label for="trStep">Step</label><input id="trStep" type="number" min="1" inputmode="numeric">
+            <label for="trEvery">Every</label><span><input id="trEvery" type="number" min="1" inputmode="numeric"> loops</span>
           </div>
         </fieldset>
       </section>

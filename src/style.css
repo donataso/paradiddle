@@ -307,7 +307,16 @@ main {
 .grow { flex: 1; }
 
 .metro-time { display: flex; gap: 16px; flex-wrap: wrap; }
-.big-beats { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; padding: 40px 0; }
+.big-beats {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 40px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
 .big-beats .dot {
   width: 64px;
   height: 64px;
@@ -376,9 +385,14 @@ main {
 }
 .settings legend { font-weight: 600; padding: 0 4px; }
 .settings label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; }
-.settings .row { display: flex; gap: 12px; }
-.settings .row label { flex-direction: row; align-items: center; gap: 6px; flex-wrap: wrap; }
-.metro-mode .settings label:has(#clickOn), .metro-mode .settings label:has(#countIn) { display: none; }
+.seg-group { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.seg { display: flex; flex-direction: column; gap: 8px; }
+.seg input { margin: 0; }
+.tr-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; align-items: center; }
+.tr-grid label { font-size: 13px; color: var(--muted); }
+.tr-grid span { display: flex; align-items: center; gap: 6px; }
+.metro-mode .settings label:has(#countIn), .metro-mode .settings label:has(#rudVoice), .metro-mode .settings label:has(#rudVol) { display: none; }
+body:not(.metro-mode) .metro-time { display: none; }
 
 .toast {
   position: fixed;

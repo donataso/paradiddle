@@ -15,7 +15,6 @@ import { Timeline, buildTimeline, clickTimeline } from './timeline';
 
 interface Settings {
   tempo: number;
-  click: boolean;
   sub: number;
   countIn: boolean;
   rudVoice: string;
@@ -25,11 +24,11 @@ interface Settings {
   trainer: Trainer;
   current: string;
   metro: TimeSig;
+  mode: 'rudiment' | 'metronome';
 }
 
 const DEFAULTS: Settings = {
   tempo: 80,
-  click: true,
   sub: 1,
   countIn: true,
   rudVoice: 'snare',
@@ -39,6 +38,7 @@ const DEFAULTS: Settings = {
   trainer: { on: false, start: 60, target: 120, step: 5, every: 4 },
   current: 'pas-16',
   metro: { num: 4, den: 4 },
+  mode: 'rudiment',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -47,7 +47,7 @@ const input = (id: string) => $<HTMLInputElement>(id);
 const stored = loadSettings<Settings>();
 const settings: Settings = { ...DEFAULTS, ...stored, trainer: { ...DEFAULTS.trainer, ...stored.trainer } };
 let custom = loadCustom();
-let mode: 'rudiment' | 'metronome' = 'rudiment';
+let mode: 'rudiment' | 'metronome' = settings.mode;
 let current = findRudiment(settings.current) ?? BUILTINS[15];
 let shown: { rud: Rudiment; measures: Measure[] } = { rud: current, measures: parsePattern(current.pattern, current.time) };
 let positions: NotePos[] = [];
@@ -55,7 +55,6 @@ let anchors: Anchor[] = [];
 let activeEl: SVGElement | undefined;
 
 const player = new Player({
-  click: settings.click,
   sub: settings.sub,
   countIn: settings.countIn,
   rudVoice: settings.rudVoice,
@@ -101,7 +100,7 @@ function findRudiment(id: string): Rudiment | undefined {
 }
 
 function persist() {
-  Object.assign(settings, player.opts, { tempo: player.tempo, current: current.id });
+  Object.assign(settings, player.opts, { tempo: player.tempo, current: current.id, mode });
   saveSettings(settings);
 }
 
@@ -301,17 +300,22 @@ $('scrim').addEventListener('click', () => setDrawer(false));
 
 // Mode tabs
 
-document.querySelectorAll<HTMLButtonElement>('.tabs button').forEach(btn => btn.addEventListener('click', () => {
-  const m = btn.dataset.mode as typeof mode;
-  if (m === mode) return;
-  player.stop();
+function applyMode(m: typeof mode) {
   mode = m;
-  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+  document.querySelectorAll<HTMLButtonElement>('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === m)));
   $('rudimentView').hidden = m !== 'rudiment';
   $('metronomeView').hidden = m !== 'metronome';
   document.body.classList.toggle('metro-mode', m === 'metronome');
   if (m === 'rudiment') drawSheet();
   renderBeats();
+}
+
+document.querySelectorAll<HTMLButtonElement>('.tabs button').forEach(btn => btn.addEventListener('click', () => {
+  const m = btn.dataset.mode as typeof mode;
+  if (m === mode) return;
+  player.stop();
+  applyMode(m);
+  persist();
 }));
 
 // Metronome time signature
@@ -466,9 +470,8 @@ function bindSettings() {
   const o = player.opts;
   fillVoices('rudVoice', o.rudVoice);
   fillVoices('clickVoice', o.clickVoice);
-  input('clickOn').checked = o.click;
   input('countIn').checked = o.countIn;
-  $<HTMLSelectElement>('subSel').value = String(o.sub);
+  $<HTMLInputElement>(`subSel`).querySelector<HTMLInputElement>(`input[value="${o.sub}"]`)!.checked = true;
   input('rudVol').value = String(o.rudVol);
   input('clickVol').value = String(o.clickVol);
   input('trOn').checked = o.trainer.on;
@@ -483,7 +486,6 @@ function bindSettings() {
       persist();
     });
   const clampTempo = (v: string, fallback: number) => Math.max(TEMPO_MIN, Math.min(TEMPO_MAX, Math.round(Number(v)) || fallback));
-  on('clickOn', 'change', el => (o.click = el.checked));
   on('countIn', 'change', el => (o.countIn = el.checked));
   on('subSel', 'change', el => (o.sub = Number(el.value)));
   on('rudVoice', 'change', el => (o.rudVoice = el.value));
@@ -510,7 +512,7 @@ async function init() {
   updateTempo();
   renderLibrary();
   select(current);
-  renderBeats();
+  applyMode(mode);
   document.querySelector('#libList button.sel')?.scrollIntoView({ block: 'center' });
 }
 
