@@ -370,10 +370,10 @@ function setStatus(text: string) {
 
 function trainerStatus(loops: number) {
   const t = player.opts.trainer;
-  if (!t.on) return setStatus(loops ? `Loop ${loops + 1}` : '');
-  const left = t.every - (loops % t.every);
+  if (!t.on) return setStatus(`Loop ${loops}`);
+  const left = t.every - ((loops - 1) % t.every);
   const done = player.tempo === t.target;
-  setStatus(done ? `Target ${t.target} reached` : `Loop ${loops + 1} · next step in ${left}`);
+  setStatus(done ? `Target ${t.target} reached` : `Loop ${loops} · next step in ${left}`);
 }
 
 const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';

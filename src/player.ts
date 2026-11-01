@@ -94,6 +94,10 @@ export class Player {
     this.segQ = 0;
     this.seg = this.opts.countIn && notes ? this.countSegment() : this.loopSegment();
     this.idx = 0;
+    if (!this.seg.count) {
+      this.loops = 1;
+      this.visual(this.timeOf(this.segQ), () => this.onLoop?.(1));
+    }
     this.playing = true;
     this.timer = window.setInterval(() => this.tick(), 25);
     this.tick();
@@ -163,11 +167,9 @@ export class Player {
   private advance() {
     this.segQ += this.seg.lenQ;
     if (!this.seg.count) {
-      this.loops++;
-      const loops = this.loops;
-      this.visual(this.timeOf(this.segQ), () => this.onLoop?.(loops));
+      const completed = this.loops;
       const t = this.opts.trainer;
-      if (t.on && t.every > 0 && loops % t.every === 0) {
+      if (t.on && t.every > 0 && completed % t.every === 0) {
         const bpm = t.target >= t.start ? Math.min(t.target, this.tempo + t.step) : Math.max(t.target, this.tempo - t.step);
         this.setTempo(bpm, this.segQ);
       }
@@ -178,6 +180,9 @@ export class Player {
     }
     this.seg = this.loopSegment();
     this.idx = 0;
+    this.loops++;
+    const loops = this.loops;
+    this.visual(this.timeOf(this.segQ), () => this.onLoop?.(loops));
   }
 
   private tick() {

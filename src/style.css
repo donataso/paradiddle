@@ -357,7 +357,7 @@ main {
 .beats .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); }
 .beats .dot.first { border-color: var(--accent); }
 .beats .dot.on { background: var(--accent); border-color: var(--accent); }
-.status-text { font-size: 13px; color: var(--muted); min-height: 1.2em; }
+.status-text { font-size: 13px; color: var(--muted); line-height: 1.4; min-height: 1.4em; }
 
 .settings {
   display: grid;
