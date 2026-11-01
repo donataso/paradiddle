@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Donatas Olsevičius
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import { confirmClick, disarm, fillIcons } from './icons';
 import { Beat, DENOMINATORS, Frac, Hand, Measure, Rudiment, Slot, TimeSig, beatLengths, defaultGroups, parsePattern, serializePattern } from './model';
 
 const SUBDIVISIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12];
@@ -52,10 +53,11 @@ export class Editor {
       <div class="ed-actions">
         <button data-act="addMeasure">+ Measure</button>
         <span class="grow"></span>
-        <button data-act="delete" class="danger">Delete</button>
+        <button data-act="delete" class="icon-btn danger" data-icon="trash" title="Delete" aria-label="Delete"></button>
         <button data-act="cancel">Cancel</button>
-        <button data-act="save" class="primary">Save</button>
+        <button data-act="save" class="icon-btn primary" data-icon="save" title="Save" aria-label="Save"></button>
       </div>`;
+    fillIcons(root);
     root.addEventListener('click', e => {
       const btn = (e.target as HTMLElement).closest('button');
       if (!btn) return;
@@ -97,7 +99,9 @@ export class Editor {
     $<HTMLInputElement>(this.root, '#edName').value = r.name;
     $<HTMLInputElement>(this.root, '#edCat').value = r.category;
     this.fillTime();
-    $(this.root, '[data-act="delete"]').hidden = isNew;
+    const del = $(this.root, '[data-act="delete"]');
+    del.hidden = isNew;
+    disarm(del);
     this.error('');
     this.renderGrid();
     this.emit(false);
@@ -168,7 +172,7 @@ export class Editor {
         this.dirty = false;
         return this.hooks.cancel();
       case 'delete':
-        return this.hooks.remove(this.draft);
+        return confirmClick(btn, () => this.hooks.remove(this.draft));
       default:
         if (!this.sel) return;
         this.edit(this.measures[this.sel.m][this.sel.b].slots, this.sel.i, act);

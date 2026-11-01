@@ -39,13 +39,13 @@
           <a href="https://github.com/sponsors/donataso" target="_blank" rel="noopener">GitHub</a>
         </div>
       </div>
+      <div id="libList" class="lib-list"></div>
       <div class="lib-actions">
-        <button id="newBtn">New</button>
+        <button id="newBtn" class="icon-btn" data-icon="plus" title="New rudiment" aria-label="New rudiment"></button>
         <button id="uploadBtn">Upload</button>
         <button id="downloadAllBtn">Download all</button>
         <input id="fileInput" type="file" accept=".json,application/json" hidden>
       </div>
-      <div id="libList" class="lib-list"></div>
     </aside>
     <div id="scrim" class="scrim" hidden></div>
 
@@ -57,9 +57,10 @@
             <div id="rMeta" class="meta"></div>
           </div>
           <div class="title-actions">
-            <button id="copyBtn">Copy</button>
-            <button id="editBtn">Edit</button>
-            <button id="downloadBtn">Download</button>
+            <button id="copyBtn" class="icon-btn" data-icon="copy" title="Copy" aria-label="Copy"></button>
+            <button id="editBtn" class="icon-btn" data-icon="edit" title="Edit" aria-label="Edit"></button>
+            <button id="downloadBtn" class="icon-btn" data-icon="download" title="Download" aria-label="Download"></button>
+            <button id="deleteBtn" class="icon-btn danger" data-icon="trash" title="Delete" aria-label="Delete"></button>
           </div>
         </div>
         <div id="sheet" class="sheet"><div id="marker" class="marker" hidden></div><div id="pulse" class="pulse" hidden></div></div>

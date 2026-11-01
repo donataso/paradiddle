@@ -4,6 +4,7 @@
 
 import './style.css';
 import { Editor } from './editor';
+import { confirmClick, disarm, fillIcons } from './icons';
 import { Measure, Rudiment, TimeSig, beatGroups, defaultGroups, parsePattern, timeLabel } from './model';
 import { Anchor, NotePos, renderSheet } from './notation';
 import { Player, TEMPO_MAX, TEMPO_MIN, Trainer } from './player';
@@ -84,14 +85,16 @@ const editor = new Editor($('editor'), {
     closeEditor();
     select(current);
   },
-  remove(r) {
-    if (!confirm(`Delete "${r.name}"?`)) return;
-    custom = custom.filter(c => c.id !== r.id);
-    persistCustom();
-    closeEditor();
-    select(BUILTINS[15]);
-  },
+  remove: deleteRudiment,
 });
+
+function deleteRudiment(r: Rudiment) {
+  custom = custom.filter(c => c.id !== r.id);
+  persistCustom();
+  closeEditor();
+  select(BUILTINS[15]);
+  toast(`Deleted "${r.name}"`);
+}
 
 function findRudiment(id: string): Rudiment | undefined {
   return BUILTINS.find(r => r.id === id) ?? custom.find(r => r.id === id);
@@ -141,12 +144,19 @@ function esc(s: string): string {
   return s.replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 }
 
+const CONFIRM_MS = 3000;
+let discardArm: { id: string; until: number } | undefined;
+
 $('libList').addEventListener('click', e => {
   const id = (e.target as HTMLElement).closest('button')?.dataset.id;
   const r = id && findRudiment(id);
   if (!r) return;
   if (!$('editor').hidden) {
-    if (editor.dirty && !confirm('Discard unsaved changes?')) return;
+    if (editor.dirty && !(discardArm?.id === r.id && Date.now() < discardArm.until)) {
+      discardArm = { id: r.id, until: Date.now() + CONFIRM_MS };
+      return toast('Unsaved changes. Tap again to discard.');
+    }
+    discardArm = undefined;
     closeEditor();
   }
   select(r);
@@ -168,6 +178,8 @@ function showRudiment(r: Rudiment, measures: Measure[]) {
   $('editBtn').hidden = !!r.builtin || !$('editor').hidden;
   $('copyBtn').hidden = !$('editor').hidden;
   $('downloadBtn').hidden = !$('editor').hidden;
+  $('deleteBtn').hidden = !!r.builtin || !$('editor').hidden;
+  disarm($('deleteBtn'));
   drawSheet();
   if (mode === 'rudiment') renderBeats();
 }
@@ -244,6 +256,10 @@ $('copyBtn').addEventListener('click', () => {
 $('editBtn').addEventListener('click', () => !current.builtin && openEditor(current, false));
 
 $('downloadBtn').addEventListener('click', () => download([current], `${slug(current.name)}.json`));
+
+$('deleteBtn').addEventListener('click', e => {
+  if (!current.builtin) confirmClick(e.currentTarget as HTMLElement, () => deleteRudiment(current));
+});
 
 $('downloadAllBtn').addEventListener('click', () => {
   if (!custom.length) return toast('No custom rudiments yet');
@@ -487,6 +503,7 @@ function bindSettings() {
 // Init
 
 async function init() {
+  fillIcons();
   await document.fonts.load('30px Bravura').catch(() => undefined);
   bindSettings();
   fillMetro();

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later */
 
 :root {
+  --danger: #c62828;
   --bg: #f6f4ef;
   --panel: #ffffff;
   --ink: #1d1c1a;
@@ -18,6 +19,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --danger: #ef5350;
     --bg: #161514;
     --panel: #201f1d;
     --ink: #ece9e2;
@@ -60,7 +62,11 @@ button {
 button:hover:not(:disabled) { border-color: var(--muted); }
 button:disabled { opacity: 0.4; cursor: default; }
 button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-button.danger { color: var(--accent); }
+button.danger { color: var(--danger); }
+button.danger.armed { background: var(--danger); border-color: var(--danger); color: #fff; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 38px; min-height: 36px; padding: 6px 9px; }
+.ico { width: 18px; height: 18px; flex: none; }
+.confirm { font-size: 14px; font-weight: 600; }
 button.icon { border: none; background: none; font-size: 22px; padding: 4px 10px; }
 
 input[type="number"], input:not([type]), select {
@@ -144,8 +150,9 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 }
 .lib-about { display: none; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); line-height: 1.7; }
 .lib-about a { color: var(--ink); }
-.lib-actions { display: flex; gap: 6px; padding: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.lib-actions { display: flex; gap: 6px; padding: 12px 12px calc(12px + env(safe-area-inset-bottom)); flex-wrap: wrap; border-top: 1px solid var(--line); }
 .lib-actions button { flex: 1 1 auto; padding: 6px 8px; font-size: 14px; white-space: nowrap; }
+.lib-actions .icon-btn { flex: none; }
 .lib-list { padding: 4px 0 24px; flex: 1; min-height: 0; overflow-y: auto; }
 .lib-list details { padding: 0 8px; }
 .lib-list summary {
