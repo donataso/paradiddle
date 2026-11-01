@@ -13,7 +13,7 @@ import { Player, TEMPO_MAX, TEMPO_MIN, Trainer } from './player';
 import { BUILTINS, CATEGORIES } from './rudiments';
 import { VOICES } from './sounds';
 import { download, importRudiments, loadCustom, loadSettings, newId, saveCustom, saveSettings, slug, uniqueName } from './storage';
-import { Timeline, buildTimeline, clickTimeline } from './timeline';
+import { Timeline, buildTimeline, clickTimeline, measureSteps } from './timeline';
 
 interface Settings {
   tempo: number;
@@ -54,6 +54,7 @@ let current = findRudiment(settings.current) ?? BUILTINS[15];
 let shown: { rud: Rudiment; measures: Measure[] } = { rud: current, measures: parsePattern(current.pattern, current.time) };
 let positions: NotePos[] = [];
 let activeEl: SVGElement | undefined;
+let activeStemEl: SVGElement | undefined;
 
 const player = new Player({
   sub: settings.sub,
@@ -66,7 +67,7 @@ const player = new Player({
 });
 player.tempo = settings.tempo;
 
-const editor = new Editor($('editor'), {
+const editor = new Editor($('editor'), { delete: $('edDeleteBtn'), cancel: $('edCancelBtn'), save: $('edSaveBtn') }, {
   change(r, measures) {
     showRudiment(r, measures);
     if (player.playing && mode === 'rudiment') player.setTimeline(buildTimeline(measures, r.time.den));
@@ -138,7 +139,7 @@ function catLabel(cat: string): string {
 
 function groupHtml(cat: string, list: Rudiment[]): string {
   return `<details open><summary>${esc(catLabel(cat))}</summary><ul>${
-    list.map(r => `<li><button data-id="${r.id}">${esc(r.name)}</button></li>`).join('')}</ul></details>`;
+    list.map(r => `<li><button data-id="${r.id}">${esc(r.name)}<span class="time-sig">${esc(timeLabel(r.time))}</span></button></li>`).join('')}</ul></details>`;
 }
 
 function markSelected() {
@@ -200,21 +201,21 @@ function drawSheet() {
 }
 
 function clearMarker() {
-  $('marker').hidden = true;
   activeEl?.classList.remove('active');
   activeEl = undefined;
+  activeStemEl?.classList.remove('active');
+  activeStemEl = undefined;
 }
 
 function showMarker(index: number) {
   const p = positions[index];
   if (!p) return;
-  const m = $('marker');
-  m.hidden = false;
-  m.style.transform = `translate(${p.x}px, ${p.top}px)`;
-  m.style.height = `${p.bottom - p.top}px`;
   activeEl?.classList.remove('active');
   activeEl = p.el;
   activeEl?.classList.add('active');
+  activeStemEl?.classList.remove('active');
+  activeStemEl = p.stemEl;
+  activeStemEl?.classList.add('active');
 }
 
 let resizeTimer = 0;
@@ -233,6 +234,7 @@ function openEditor(r: Rudiment, isNew: boolean) {
 
 function closeEditor() {
   $('editor').hidden = true;
+  editor.close();
 }
 
 $('newBtn').addEventListener('click', () => {
@@ -346,7 +348,7 @@ function applyMetro(t: TimeSig) {
 // Beat indicator
 
 function renderBeats() {
-  const groups = mode === 'metronome' ? beatGroups(settings.metro) : shown.measures[0].map(b => b.slots.length);
+  const groups = mode === 'metronome' ? beatGroups(settings.metro) : measureSteps(shown.measures)[0];
   const mk = (big: boolean) => groups.map((units, gi) => {
     let html = `<span class="dot${gi === 0 ? ' first' : ''}" data-group="${gi}" data-step="0">${big ? gi + 1 : ''}</span>`;
     for (let u = 1; u < units; u++) html += `<span class="dot sub" data-group="${gi}" data-step="${u}"></span>`;

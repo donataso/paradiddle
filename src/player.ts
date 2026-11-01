@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { playVoice } from './sounds';
-import { TBeat, TNote, Timeline } from './timeline';
+import { TBeat, TMark, TNote, Timeline } from './timeline';
 
 export interface Trainer {
   on: boolean;
@@ -25,6 +25,7 @@ export interface PlayerOptions {
 
 type Item =
   | { q: number; type: 'note'; note: TNote }
+  | { q: number; type: 'rest'; rest: TMark }
   | { q: number; type: 'click'; beat: TBeat; level: 'accent' | 'normal' | 'sub' }
   | { q: number; type: 'step'; beat: TBeat; step: number };
 
@@ -143,9 +144,7 @@ export class Player {
     const step = unit / sub;
     for (const beat of beats) {
       items.push({ q: beat.q, type: 'click', beat, level: beat.index === 0 ? 'accent' : 'normal' });
-      items.push({ q: beat.q, type: 'step', beat, step: 0 });
-      const stepQ = beat.lenQ / beat.units;
-      for (let u = 1; u < beat.units; u++) items.push({ q: beat.q + u * stepQ, type: 'step', beat, step: u });
+      beat.stepOffsets.forEach((off, u) => items.push({ q: beat.q + off, type: 'step', beat, step: u }));
       if (sub > 1) for (let q = beat.q + step; q < beat.q + beat.lenQ - 1e-9; q += step) items.push({ q, type: 'click', beat, level: 'sub' });
     }
   }
@@ -159,7 +158,10 @@ export class Player {
 
   private loopSegment(): Segment {
     const items: Item[] = [];
-    if (this.notesOn) for (const note of this.tl.notes) items.push({ q: note.q, type: 'note', note });
+    if (this.notesOn) {
+      for (const note of this.tl.notes) items.push({ q: note.q, type: 'note', note });
+      for (const rest of this.tl.rests) items.push({ q: rest.q, type: 'rest', rest });
+    }
     this.clicks(this.tl.beats, items);
     return { count: false, lenQ: this.tl.lenQ, items: items.sort((a, b) => a.q - b.q) };
   }
@@ -199,6 +201,7 @@ export class Player {
       if (t > horizon) break;
       this.idx++;
       if (it.type === 'note') this.playNote(it.note, t);
+      else if (it.type === 'rest') this.visual(t, () => this.onNote?.(it.rest.index));
       else if (it.type === 'click') this.playClick(it, t);
       else { const count = this.seg.count; this.visual(t, () => this.onBeat?.(it.beat, count, it.step)); }
     }

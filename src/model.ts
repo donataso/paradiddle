@@ -173,3 +173,17 @@ export function beatEvents(slots: Slot[]): BeatEvent[] {
   });
   return ev;
 }
+
+// Like beatEvents, but each written rest stays its own pulse — only a hold
+// ('-') merges into the previous pulse, since it's the one token that means
+// "keep sustaining", not "another silent beat". Used for beat-indicator dots,
+// where every written note or rest should be individually trackable.
+export function beatPulses(slots: Slot[]): BeatEvent[] {
+  const ev: BeatEvent[] = [];
+  slots.forEach((s, i) => {
+    const last = ev[ev.length - 1];
+    if (s.kind === 'hold' && last) last.len++;
+    else ev.push({ start: i, len: 1, slot: s.kind === 'note' ? s : undefined });
+  });
+  return ev;
+}

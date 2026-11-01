@@ -14,6 +14,7 @@ export interface NotePos {
   top: number;
   bottom: number;
   el?: SVGElement;
+  stemEl?: SVGElement;
 }
 
 export interface Sheet {
@@ -51,6 +52,7 @@ interface Built {
   beams: Beam[];
   tuplets: Tuplet[];
   play: StaveNote[];
+  marks: StaveNote[];
   lenQ: number;
 }
 
@@ -86,6 +88,7 @@ function build(measure: Measure, time: TimeSig): Built {
   const beams: Beam[] = [];
   const tuplets: Tuplet[] = [];
   const play: StaveNote[] = [];
+  const marks: StaveNote[] = [];
   const pendingTuplets: { notes: StaveNote[]; num: number; occ: number }[] = [];
   let q = 0;
   for (const beat of measure) {
@@ -100,6 +103,7 @@ function build(measure: Measure, time: TimeSig): Built {
         const sn = makeNote(n.dur, n.rest, n.slot);
         q += n.dur.value * 4 * ratio;
         if (n.slot) play.push(sn);
+        if (n.first) marks.push(sn);
         if (!n.rest && BEAMABLE.has(durationCode(n.dur).code)) run.push(sn);
         else flush();
         return sn;
@@ -113,7 +117,7 @@ function build(measure: Measure, time: TimeSig): Built {
     tuplets.push(new Tuplet(t.notes, { numNotes: t.num, notesOccupied: t.occ, ratioed: false }));
   }
   const voice = new Voice({ numBeats: time.num, beatValue: time.den }).setMode(Voice.Mode.SOFT).addTickables(tickables);
-  return { voice, beams, tuplets, play, lenQ: q };
+  return { voice, beams, tuplets, play, marks, lenQ: q };
 }
 
 function minWidth(measure: Measure, time: TimeSig): number {
@@ -149,6 +153,8 @@ export function renderSheet(host: HTMLElement, measures: Measure[], time: TimeSi
 
   const renderer = new Renderer(host as HTMLDivElement, Renderer.Backends.SVG);
   renderer.resize(width, lines.length * LINE_H + 10);
+  const svg = host.querySelector('svg')!;
+  const svgTop = svg.getBoundingClientRect().top - host.getBoundingClientRect().top;
   const ctx = renderer.getContext();
   ctx.setFillStyle('currentColor');
   ctx.setStrokeStyle('currentColor');
@@ -177,14 +183,15 @@ export function renderSheet(host: HTMLElement, measures: Measure[], time: TimeSi
       b.voice.draw(ctx, stave);
       b.beams.forEach(beam => beam.setContext(ctx).draw());
       b.tuplets.forEach(t => t.setContext(ctx).draw());
-      const top = Math.min(stave.getYForLine(0), ...b.play.map(n => n.getStemExtents().topY)) - 18;
-      const bottom = stave.getYForLine(4) + 34;
-      for (const n of b.play) {
+      const top = svgTop + Math.min(stave.getYForLine(0), ...b.play.map(n => n.getStemExtents().topY)) - 28;
+      const bottom = svgTop + stave.getYForLine(4) + 24;
+      for (const n of b.marks) {
         positions.push({
           x: (n.getNoteHeadBeginX() + n.getNoteHeadEndX()) / 2,
           top,
           bottom,
           el: n.getSVGElement() ?? undefined,
+          stemEl: n.getStem()?.getSVGElement() ?? undefined,
         });
       }
       x += w;

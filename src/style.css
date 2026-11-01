@@ -12,7 +12,6 @@
   --accent: #d4572a;
   --accent-ink: #ffffff;
   --sel: #fbe6dc;
-  --marker: rgba(212, 87, 42, 0.16);
   --radius: 10px;
   color-scheme: light;
 }
@@ -28,7 +27,6 @@
     --accent: #f07a4a;
     --accent-ink: #161514;
     --sel: #3b2a22;
-    --marker: rgba(240, 122, 74, 0.2);
     color-scheme: dark;
   }
 }
@@ -168,6 +166,10 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 .lib-list ul { list-style: none; margin: 0; padding: 0; }
 .lib-list li button {
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
   text-align: left;
   border: none;
   background: none;
@@ -176,6 +178,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 }
 .lib-list li button:hover { background: var(--bg); }
 .lib-list li button.sel { background: var(--sel); color: var(--accent); font-weight: 600; }
+.lib-list li button .time-sig { color: var(--muted); font-weight: 400; font-size: 0.8em; flex-shrink: 0; }
 .chip {
   font-size: 10px;
   border: 1px solid var(--line);
@@ -218,16 +221,7 @@ main {
 }
 .sheet svg { display: block; }
 .sheet .active { color: var(--accent); }
-.marker {
-  position: absolute;
-  left: -13px;
-  top: 8px;
-  width: 26px;
-  border-radius: 6px;
-  background: var(--marker);
-  pointer-events: none;
-  transition: transform 50ms linear;
-}
+.sheet .active, .sheet .active path, .sheet .active rect, .sheet .active line, .sheet .active g { stroke: var(--accent); fill: var(--accent); }
 
 .editor {
   background: var(--panel);

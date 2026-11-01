@@ -20,6 +20,12 @@ export interface EditorHooks {
 
 const $ = <T extends HTMLElement>(root: HTMLElement, sel: string) => root.querySelector(sel) as T;
 
+export interface EditorActions {
+  delete: HTMLElement;
+  cancel: HTMLElement;
+  save: HTMLElement;
+}
+
 export class Editor {
   draft!: Rudiment;
   isNew = false;
@@ -27,7 +33,7 @@ export class Editor {
   private measures: Measure[] = [];
   private sel: Sel | null = { m: 0, b: 0, i: 0 };
 
-  constructor(private root: HTMLElement, private hooks: EditorHooks) {
+  constructor(private root: HTMLElement, private actions: EditorActions, private hooks: EditorHooks) {
     root.innerHTML = `
       <div class="ed-fields">
         <label class="ed-name">${t('name')} <input id="edName" maxlength="80"></label>
@@ -54,10 +60,6 @@ export class Editor {
       <div class="ed-error" role="alert"></div>
       <div class="ed-actions">
         <button data-act="addMeasure">${t('addMeasure')}</button>
-        <span class="grow"></span>
-        <button data-act="delete" class="icon-btn danger" data-icon="trash" title="${t('delete')}" aria-label="${t('delete')}"></button>
-        <button data-act="cancel">${t('cancel')}</button>
-        <button data-act="save" class="icon-btn primary" data-icon="save" title="${t('save')}" aria-label="${t('save')}"></button>
       </div>`;
     fillIcons(root);
     root.addEventListener('click', e => {
@@ -90,6 +92,9 @@ export class Editor {
     for (const id of ['#edNum', '#edDen']) {
       $(root, id).addEventListener('change', () => this.timeChanged());
     }
+    actions.delete.addEventListener('click', () => confirmClick(actions.delete, () => this.hooks.remove(this.draft)));
+    actions.cancel.addEventListener('click', () => this.action('cancel', actions.cancel));
+    actions.save.addEventListener('click', () => this.action('save', actions.save));
   }
 
   open(r: Rudiment, isNew: boolean) {
@@ -101,12 +106,19 @@ export class Editor {
     $<HTMLInputElement>(this.root, '#edName').value = r.name;
     $<HTMLInputElement>(this.root, '#edCat').value = r.category;
     this.fillTime();
-    const del = $(this.root, '[data-act="delete"]');
-    del.hidden = isNew;
-    disarm(del);
+    this.actions.delete.hidden = isNew;
+    this.actions.cancel.hidden = false;
+    this.actions.save.hidden = false;
+    disarm(this.actions.delete);
     this.error('');
     this.renderGrid();
     this.emit(false);
+  }
+
+  close() {
+    this.actions.delete.hidden = true;
+    this.actions.cancel.hidden = true;
+    this.actions.save.hidden = true;
   }
 
   private fillTime() {
@@ -177,8 +189,6 @@ export class Editor {
       case 'cancel':
         this.dirty = false;
         return this.hooks.cancel();
-      case 'delete':
-        return confirmClick(btn, () => this.hooks.remove(this.draft));
       default:
         if (!this.sel) return;
         this.edit(this.measures[this.sel.m][this.sel.b].slots, this.sel.i, act);

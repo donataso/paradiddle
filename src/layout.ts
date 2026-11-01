@@ -8,6 +8,7 @@ export interface LNote {
   dur: Frac;
   rest: boolean;
   slot?: Slot;
+  first: boolean;
 }
 
 export interface LGroup {
@@ -44,7 +45,7 @@ function pieces(dur: Frac, e: BeatEvent): LNote[] {
   while (rem.n > 0) {
     const d = largestWritable(rem);
     const first = !out.length;
-    out.push({ dur: d, rest: !e.slot || !first, slot: first ? e.slot : undefined });
+    out.push({ dur: d, rest: !e.slot || !first, slot: first ? e.slot : undefined, first });
     rem = rem.sub(d);
   }
   return out;
