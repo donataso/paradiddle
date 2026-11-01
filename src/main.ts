@@ -7,7 +7,7 @@ import { Editor } from './editor';
 import { renderGroupPicker } from './groupPicker';
 import { confirmClick, disarm, fillIcons } from './icons';
 import { getLocale, setLocale, t } from './i18n';
-import { Measure, Rudiment, TimeSig, beatGroups, defaultGroups, parsePattern, timeLabel } from './model';
+import { DEFAULT_CATEGORY, Measure, Rudiment, TimeSig, beatGroups, defaultGroups, parsePattern, timeLabel } from './model';
 import { NotePos, renderSheet } from './notation';
 import { Player, TEMPO_MAX, TEMPO_MIN, Trainer } from './player';
 import { BUILTINS, CATEGORIES } from './rudiments';
@@ -204,7 +204,7 @@ function updateStarButton() {
 }
 
 function catLabel(cat: string): string {
-  if (cat === 'Custom') return t('categoryCustom');
+  if (cat === DEFAULT_CATEGORY) return t('categoryCustom');
   return CATEGORIES.includes(cat) ? t(`cat:${cat}`) : cat;
 }
 
@@ -322,12 +322,12 @@ $('starBtn').addEventListener('click', () => toggleStar(current));
 
 $('newBtn').addEventListener('click', () => {
   setDrawer(false);
-  openEditor({ id: newId(), name: uniqueName(t('newRudimentName'), [...BUILTINS, ...custom]), category: t('categoryCustom'), time: { num: 2, den: 4 }, pattern: 'RLRL RLRL' }, true);
+  openEditor({ id: newId(), name: uniqueName(t('newRudimentName'), [...BUILTINS, ...custom]), category: DEFAULT_CATEGORY, time: { num: 2, den: 4 }, pattern: 'RLRL RLRL' }, true);
 });
 
 $('copyBtn').addEventListener('click', () => {
   const base = current.name.replace(/^\d+\.\s*/, '');
-  openEditor({ ...structuredClone(current), id: newId(), builtin: undefined, name: uniqueName(`${base} (copy)`, [...BUILTINS, ...custom]), category: current.builtin ? t('categoryCustom') : current.category }, true);
+  openEditor({ ...structuredClone(current), id: newId(), builtin: undefined, name: uniqueName(`${base} (copy)`, [...BUILTINS, ...custom]), category: current.builtin ? DEFAULT_CATEGORY : current.category }, true);
 });
 
 $('editBtn').addEventListener('click', () => !current.builtin && openEditor(current, false));

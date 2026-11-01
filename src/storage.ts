@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Donatas Olsevičius
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { DENOMINATORS, Rudiment, parsePattern } from './model';
+import { DEFAULT_CATEGORY, DENOMINATORS, Rudiment, parsePattern } from './model';
 
 const CUSTOM_KEY = 'paradiddle.custom';
 const SETTINGS_KEY = 'paradiddle.settings';
@@ -60,7 +60,7 @@ function validate(x: unknown): Rudiment | undefined {
   return {
     id: typeof r.id === 'string' && r.id.startsWith('c-') ? r.id : newId(),
     name: r.name.trim() || 'Untitled',
-    category: typeof r.category === 'string' && r.category.trim() ? r.category.trim() : 'Custom',
+    category: typeof r.category === 'string' && r.category.trim() ? r.category.trim() : DEFAULT_CATEGORY,
     time,
     pattern: r.pattern,
   };

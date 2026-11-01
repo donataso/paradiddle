@@ -5,7 +5,7 @@
 import { confirmClick, disarm, fillIcons } from './icons';
 import { t } from './i18n';
 import { renderGroupPicker } from './groupPicker';
-import { Beat, DENOMINATORS, Frac, Hand, Measure, Rudiment, Slot, TimeSig, beatGroups, beatLengths, defaultGroups, parsePattern, serializePattern } from './model';
+import { Beat, DEFAULT_CATEGORY, DENOMINATORS, Frac, Hand, Measure, Rudiment, Slot, TimeSig, beatGroups, beatLengths, defaultGroups, parsePattern, serializePattern } from './model';
 
 const SUBDIVISIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12];
 
@@ -104,7 +104,7 @@ export class Editor {
     this.measures = parsePattern(r.pattern, r.time);
     this.sel = { m: 0, b: 0, i: 0 };
     $<HTMLInputElement>(this.root, '#edName').value = r.name;
-    $<HTMLInputElement>(this.root, '#edCat').value = r.category;
+    $<HTMLInputElement>(this.root, '#edCat').value = r.category === DEFAULT_CATEGORY ? t('categoryCustom') : r.category;
     this.fillTime();
     this.actions.delete.hidden = isNew;
     this.actions.cancel.hidden = false;
@@ -180,7 +180,7 @@ export class Editor {
       }
       case 'save':
         if (!this.draft.name.trim()) return this.error(t('nameRequired'));
-        if (!this.draft.category.trim()) this.draft.category = 'Custom';
+        if (!this.draft.category.trim()) this.draft.category = DEFAULT_CATEGORY;
         this.draft.name = this.draft.name.trim();
         this.draft.category = this.draft.category.trim();
         this.draft.pattern = serializePattern(this.measures);

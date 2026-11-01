@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Donatas Olsevičius
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+export const DEFAULT_CATEGORY = '__custom__';
+
 export type Hand = 'R' | 'L';
 export type Grace = 'flam' | 'drag';
 export type Roll = 'diddle' | 'buzz';
