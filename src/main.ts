@@ -6,7 +6,7 @@ import './style.css';
 import { Editor } from './editor';
 import { confirmClick, disarm, fillIcons } from './icons';
 import { Measure, Rudiment, TimeSig, beatGroups, defaultGroups, parsePattern, timeLabel } from './model';
-import { Anchor, NotePos, renderSheet } from './notation';
+import { NotePos, renderSheet } from './notation';
 import { Player, TEMPO_MAX, TEMPO_MIN, Trainer } from './player';
 import { BUILTINS, CATEGORIES } from './rudiments';
 import { VOICES } from './sounds';
@@ -51,7 +51,6 @@ let mode: 'rudiment' | 'metronome' = settings.mode;
 let current = findRudiment(settings.current) ?? BUILTINS[15];
 let shown: { rud: Rudiment; measures: Measure[] } = { rud: current, measures: parsePattern(current.pattern, current.time) };
 let positions: NotePos[] = [];
-let anchors: Anchor[] = [];
 let activeEl: SVGElement | undefined;
 
 const player = new Player({
@@ -68,7 +67,7 @@ player.tempo = settings.tempo;
 const editor = new Editor($('editor'), {
   change(r, measures) {
     showRudiment(r, measures);
-    if (player.playing && mode === 'rudiment') player.setTimeline(buildTimeline(measures));
+    if (player.playing && mode === 'rudiment') player.setTimeline(buildTimeline(measures, r.time.den));
   },
   save(r) {
     const i = custom.findIndex(c => c.id === r.id);
@@ -186,17 +185,15 @@ function showRudiment(r: Rudiment, measures: Measure[]) {
 function drawSheet() {
   clearMarker();
   try {
-    ({ notes: positions, anchors } = renderSheet($('sheet'), shown.measures, shown.rud.time));
+    ({ notes: positions } = renderSheet($('sheet'), shown.measures, shown.rud.time));
   } catch (err) {
     console.error(err);
     positions = [];
-    anchors = [];
   }
 }
 
 function clearMarker() {
   $('marker').hidden = true;
-  $('pulse').hidden = true;
   activeEl?.classList.remove('active');
   activeEl = undefined;
 }
@@ -211,17 +208,6 @@ function showMarker(index: number) {
   activeEl?.classList.remove('active');
   activeEl = p.el;
   activeEl?.classList.add('active');
-}
-
-function showPulse(q: number) {
-  const i = anchors.findIndex((a, k) => a.q <= q + 1e-9 && (anchors[k + 1]?.q ?? Infinity) > q + 1e-9);
-  const a = anchors[i];
-  const b = anchors[i + 1];
-  if (!a) return;
-  const x = b && b.line === a.line ? a.x + ((q - a.q) / (b.q - a.q)) * (b.x - a.x) : a.x;
-  const p = $('pulse');
-  p.hidden = false;
-  p.style.transform = `translate(${x}px, ${a.y}px)`;
 }
 
 let resizeTimer = 0;
@@ -350,22 +336,29 @@ function currentTimeSig(): TimeSig {
 }
 
 function renderBeats() {
-  const n = beatGroups(currentTimeSig()).length;
-  const dots = [...Array(n)].map((_, i) => `<span class="dot${i === 0 ? ' first' : ''}"></span>`).join('');
-  $('beats').innerHTML = dots;
-  $('bigBeats').innerHTML = [...Array(n)].map((_, i) => `<span class="dot${i === 0 ? ' first' : ''}">${i + 1}</span>`).join('');
+  const groups = beatGroups(currentTimeSig());
+  const mk = (big: boolean) => groups.map((units, gi) => {
+    let html = `<span class="dot${gi === 0 ? ' first' : ''}" data-group="${gi}" data-step="0">${big ? gi + 1 : ''}</span>`;
+    for (let u = 1; u < units; u++) html += `<span class="dot sub" data-group="${gi}" data-step="${u}"></span>`;
+    return html;
+  }).join('');
+  $('beats').innerHTML = mk(false);
+  $('bigBeatsDots').innerHTML = mk(true);
+  (mode === 'rudiment' ? $('sheet') : $('bigBeats')).prepend($('statusText'));
 }
 
-function lightBeat(index: number) {
-  for (const host of [$('beats'), $('bigBeats')]) {
-    host.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === index));
+function lightBeat(group: number, step: number) {
+  for (const host of [$('beats'), $('bigBeatsDots')]) {
+    host.querySelectorAll('.dot').forEach(d => {
+      d.classList.toggle('on', d.getAttribute('data-group') === String(group) && d.getAttribute('data-step') === String(step));
+    });
   }
 }
 
 // Transport
 
 function timeline(): Timeline {
-  return mode === 'metronome' ? clickTimeline(settings.metro) : buildTimeline(shown.measures);
+  return mode === 'metronome' ? clickTimeline(settings.metro) : buildTimeline(shown.measures, shown.rud.time.den);
 }
 
 function setStatus(text: string) {
@@ -385,11 +378,10 @@ const STOP_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6"
 $('playBtn').innerHTML = PLAY_ICON;
 
 player.onNote = showMarker;
-player.onPulse = showPulse;
-player.onBeat = (beat, count) => {
-  if (beat.index === 0 && !count) renderBeats();
-  lightBeat(beat.index);
-  if (count) setStatus(`Count-in ${beat.index + 1}`);
+player.onBeat = (beat, count, step) => {
+  if (beat.index === 0 && step === 0 && !count) renderBeats();
+  lightBeat(beat.index, step);
+  if (count && step === 0) setStatus(`Count-in ${beat.index + 1}`);
 };
 player.onLoop = trainerStatus;
 player.onTempo = () => {
@@ -400,7 +392,7 @@ player.onStop = () => {
   $('playBtn').innerHTML = PLAY_ICON;
   $('playBtn').setAttribute('aria-label', 'Play');
   clearMarker();
-  lightBeat(-1);
+  lightBeat(-1, -1);
   setStatus('');
   releaseWakeLock();
 };
@@ -471,7 +463,7 @@ function bindSettings() {
   fillVoices('rudVoice', o.rudVoice);
   fillVoices('clickVoice', o.clickVoice);
   input('countIn').checked = o.countIn;
-  $<HTMLInputElement>(`subSel`).querySelector<HTMLInputElement>(`input[value="${o.sub}"]`)!.checked = true;
+  $<HTMLSelectElement>('subSel').value = String(o.sub);
   input('rudVol').value = String(o.rudVol);
   input('clickVol').value = String(o.clickVol);
   input('trOn').checked = o.trainer.on;

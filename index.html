@@ -63,12 +63,12 @@
             <button id="deleteBtn" class="icon-btn danger" data-icon="trash" title="Delete" aria-label="Delete"></button>
           </div>
         </div>
-        <div id="sheet" class="sheet"><div id="marker" class="marker" hidden></div><div id="pulse" class="pulse" hidden></div></div>
+        <div id="sheet" class="sheet"><div id="statusText" class="status-text"></div><div id="beats" class="beats"></div><div id="marker" class="marker" hidden></div></div>
         <div id="editor" class="editor" hidden></div>
       </section>
 
       <section id="metronomeView" hidden>
-        <div id="bigBeats" class="big-beats"></div>
+        <div id="bigBeats" class="big-beats"><div id="bigBeatsDots" class="big-beats-dots"></div></div>
       </section>
 
       <section class="transport">
@@ -80,10 +80,6 @@
           <button data-tempo="5">+5</button>
           <button data-tempo="10">+10</button>
           <input id="tempoRange" type="range" aria-label="Tempo">
-        </div>
-        <div class="status">
-          <div id="beats" class="beats"></div>
-          <div id="statusText" class="status-text"></div>
         </div>
       </section>
 
@@ -98,15 +94,17 @@
             <label id="mGroupsWrap">Grouping <input id="mGroups" placeholder="2+2+3"></label>
           </div>
           <label class="check"><input id="countIn" type="checkbox"> 1 bar count-in</label>
-          <div class="seg-group">
-            <span>Subdivision</span>
-            <div class="seg" id="subSel" role="radiogroup" aria-label="Subdivision">
-              <label class="check"><input type="radio" name="sub" value="1"> Off</label>
-              <label class="check"><input type="radio" name="sub" value="2"> 2</label>
-              <label class="check"><input type="radio" name="sub" value="3"> 3</label>
-              <label class="check"><input type="radio" name="sub" value="4"> 4</label>
-            </div>
-          </div>
+          <label>Subdivision
+            <select id="subSel">
+              <option value="1">Off</option>
+              <option value="2">2 per beat</option>
+              <option value="3">3 per beat</option>
+              <option value="4">4 per beat</option>
+              <option value="5">5 per beat</option>
+              <option value="6">6 per beat</option>
+              <option value="7">7 per beat</option>
+            </select>
+          </label>
         </fieldset>
         <fieldset>
           <legend>Sounds</legend>

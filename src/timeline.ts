@@ -22,30 +22,25 @@ export interface Timeline {
   notes: TNote[];
   beats: TBeat[];
   countIn: TBeat[];
-  pulses: number[];
+  unitQ: number;
 }
 
-export function buildTimeline(measures: Measure[]): Timeline {
+export function buildTimeline(measures: Measure[], den: number): Timeline {
   const notes: TNote[] = [];
   const beats: TBeat[] = [];
-  const pulses: number[] = [];
-  const grid = new Map<number, number>();
-  for (const b of measures.flat()) grid.set(b.len.value, Math.max(grid.get(b.len.value) ?? 1, b.slots.length));
   let q = 0;
   for (const m of measures) {
     m.forEach((beat, bi) => {
       const lenQ = beat.len.value * 4;
       const slotQ = lenQ / beat.slots.length;
       beats.push({ q, lenQ, index: bi });
-      const n = grid.get(beat.len.value)!;
-      for (let i = 0; i < n; i++) pulses.push(q + (i * lenQ) / n);
       for (const e of beatEvents(beat.slots)) {
         if (e.slot) notes.push({ q: q + e.start * slotQ, durQ: e.len * slotQ, slot: e.slot, index: notes.length });
       }
       q += lenQ;
     });
   }
-  return { lenQ: q, notes, beats, countIn: beats.slice(0, measures[0].length), pulses };
+  return { lenQ: q, notes, beats, countIn: beats.slice(0, measures[0].length), unitQ: 4 / den };
 }
 
 export function clickTimeline(time: TimeSig): Timeline {
@@ -55,5 +50,5 @@ export function clickTimeline(time: TimeSig): Timeline {
     q += b.lenQ;
     return b;
   });
-  return { lenQ: q, notes: [], beats, countIn: beats, pulses: [] };
+  return { lenQ: q, notes: [], beats, countIn: beats, unitQ: 4 / time.den };
 }

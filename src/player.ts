@@ -26,7 +26,7 @@ export interface PlayerOptions {
 type Item =
   | { q: number; type: 'note'; note: TNote }
   | { q: number; type: 'click'; beat: TBeat; level: 'accent' | 'normal' | 'sub' }
-  | { q: number; type: 'pulse' };
+  | { q: number; type: 'step'; beat: TBeat; step: number };
 
 interface Segment {
   count: boolean;
@@ -41,8 +41,7 @@ const LEVEL = { accent: 1, tap: 0.42, grace: 0.22, buzz: 0.3 };
 
 export class Player {
   onNote?: (index: number) => void;
-  onPulse?: (q: number) => void;
-  onBeat?: (beat: TBeat, count: boolean) => void;
+  onBeat?: (beat: TBeat, count: boolean, step: number) => void;
   onTempo?: (bpm: number) => void;
   onLoop?: (loops: number) => void;
   onStop?: () => void;
@@ -140,9 +139,14 @@ export class Player {
 
   private clicks(beats: TBeat[], items: Item[]) {
     const sub = Math.max(1, this.opts.sub);
+    const unit = this.tl.unitQ;
+    const step = unit / sub;
     for (const beat of beats) {
       items.push({ q: beat.q, type: 'click', beat, level: beat.index === 0 ? 'accent' : 'normal' });
-      for (let i = 1; i < sub; i++) items.push({ q: beat.q + (beat.lenQ * i) / sub, type: 'click', beat, level: 'sub' });
+      items.push({ q: beat.q, type: 'step', beat, step: 0 });
+      const units = Math.max(1, Math.round(beat.lenQ / unit));
+      for (let u = 1; u < units; u++) items.push({ q: beat.q + u * unit, type: 'step', beat, step: u });
+      if (sub > 1) for (let q = beat.q + step; q < beat.q + beat.lenQ - 1e-9; q += step) items.push({ q, type: 'click', beat, level: 'sub' });
     }
   }
 
@@ -155,10 +159,7 @@ export class Player {
 
   private loopSegment(): Segment {
     const items: Item[] = [];
-    if (this.notesOn) {
-      for (const note of this.tl.notes) items.push({ q: note.q, type: 'note', note });
-      for (const q of this.tl.pulses) items.push({ q, type: 'pulse' });
-    }
+    if (this.notesOn) for (const note of this.tl.notes) items.push({ q: note.q, type: 'note', note });
     this.clicks(this.tl.beats, items);
     return { count: false, lenQ: this.tl.lenQ, items: items.sort((a, b) => a.q - b.q) };
   }
@@ -199,7 +200,7 @@ export class Player {
       this.idx++;
       if (it.type === 'note') this.playNote(it.note, t);
       else if (it.type === 'click') this.playClick(it, t);
-      else this.visual(t, () => this.onPulse?.(it.q));
+      else { const count = this.seg.count; this.visual(t, () => this.onBeat?.(it.beat, count, it.step)); }
     }
   }
 
@@ -209,7 +210,6 @@ export class Player {
       const gain = it.level === 'sub' ? 0.45 : it.level === 'accent' ? 1 : 0.75;
       playVoice(this.ctx!, this.clickGain!, this.opts.clickVoice, t, gain, it.level);
     }
-    if (it.level !== 'sub') this.visual(t, () => this.onBeat?.(it.beat, count));
   }
 
   private playNote(n: TNote, t: number) {

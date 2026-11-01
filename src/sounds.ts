@@ -57,15 +57,17 @@ function hiss(ctx: BaseAudioContext, dest: AudioNode, t: number, filter: BiquadF
 }
 
 export function playVoice(ctx: BaseAudioContext, dest: AudioNode, voice: string, t: number, gain: number, variant: Variant = 'normal') {
-  const pitch = variant === 'accent' ? 1.5 : variant === 'sub' ? 0.8 : 1;
+  const pitch = variant === 'accent' ? 1.8 : variant === 'sub' ? 0.8 : 1;
+  const ring = variant === 'accent' ? 1.6 : 1;
+  const dk = (d: number) => d * ring;
   const g = gain;
   switch (voice) {
     case 'beep':
-      tone(ctx, dest, t, 'sine', 880 * pitch, 880 * pitch, g * 0.6, 0.07);
+      tone(ctx, dest, t, 'sine', 880 * pitch, 880 * pitch, g * 0.6, dk(0.07));
       break;
     case 'woodblock':
-      tone(ctx, dest, t, 'sine', 1100 * pitch, 900 * pitch, g * 0.8, 0.06);
-      hiss(ctx, dest, t, 'bandpass', 2200 * pitch, 8, g * 0.6, 0.02);
+      tone(ctx, dest, t, 'sine', 1100 * pitch, 900 * pitch, g * 0.8, dk(0.06));
+      hiss(ctx, dest, t, 'bandpass', 2200 * pitch, 8, g * 0.6, dk(0.02));
       break;
     case 'cowbell': {
       const f = ctx.createBiquadFilter();
@@ -73,27 +75,27 @@ export function playVoice(ctx: BaseAudioContext, dest: AudioNode, voice: string,
       f.frequency.value = 900 * pitch;
       f.Q.value = 1.5;
       f.connect(dest);
-      tone(ctx, f, t, 'square', 562 * pitch, 562 * pitch, g * 0.5, 0.25);
-      tone(ctx, f, t, 'square', 845 * pitch, 845 * pitch, g * 0.5, 0.25);
+      tone(ctx, f, t, 'square', 562 * pitch, 562 * pitch, g * 0.5, dk(0.25));
+      tone(ctx, f, t, 'square', 845 * pitch, 845 * pitch, g * 0.5, dk(0.25));
       break;
     }
     case 'rim':
-      hiss(ctx, dest, t, 'bandpass', 1800 * pitch, 4, g * 1.4, 0.04);
-      tone(ctx, dest, t, 'triangle', 420 * pitch, 380 * pitch, g * 0.5, 0.03);
+      hiss(ctx, dest, t, 'bandpass', 1800 * pitch, 4, g * 1.4, dk(0.04));
+      tone(ctx, dest, t, 'triangle', 420 * pitch, 380 * pitch, g * 0.5, dk(0.03));
       break;
     case 'hihat':
-      hiss(ctx, dest, t, 'highpass', 7000 * pitch, 1, g * 0.9, 0.05);
+      hiss(ctx, dest, t, 'highpass', 7000 * pitch, 1, g * 0.9, dk(0.05));
       break;
     case 'pad':
-      hiss(ctx, dest, t, 'bandpass', 1200 * pitch, 1.2, g * 1.6, 0.05);
-      tone(ctx, dest, t, 'sine', 320 * pitch, 260 * pitch, g * 0.3, 0.03);
+      hiss(ctx, dest, t, 'bandpass', 1200 * pitch, 1.2, g * 1.6, dk(0.05));
+      tone(ctx, dest, t, 'sine', 320 * pitch, 260 * pitch, g * 0.3, dk(0.03));
       break;
     case 'snare':
-      hiss(ctx, dest, t, 'highpass', 1500, 0.7, g * 0.9, 0.12 + 0.08 * g);
-      tone(ctx, dest, t, 'triangle', 210 * pitch, 160 * pitch, g * 0.7, 0.08);
+      hiss(ctx, dest, t, 'highpass', 1500, 0.7, g * 0.9, dk(0.12 + 0.08 * g));
+      tone(ctx, dest, t, 'triangle', 210 * pitch, 160 * pitch, g * 0.7, dk(0.08));
       break;
     default:
-      tone(ctx, dest, t, 'square', 1600 * pitch, 1600 * pitch, g * 0.35, 0.02);
-      tone(ctx, dest, t, 'sine', 3200 * pitch, 3200 * pitch, g * 0.3, 0.015);
+      tone(ctx, dest, t, 'square', 1600 * pitch, 1600 * pitch, g * 0.35, dk(0.02));
+      tone(ctx, dest, t, 'sine', 3200 * pitch, 3200 * pitch, g * 0.3, dk(0.015));
   }
 }
