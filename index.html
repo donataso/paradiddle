@@ -24,24 +24,30 @@
 
   <div class="layout">
     <aside id="library" class="library">
-      <div class="lib-placeholder"></div>
+      <div class="lib-tabs" role="tablist">
+        <button role="tab" data-libtab="pas" aria-selected="true">PAS</button>
+        <button role="tab" data-libtab="custom" aria-selected="false" data-i18n="categoryCustom"></button>
+        <button role="tab" data-libtab="starred" aria-selected="false" class="icon-btn star-btn on" data-icon="star" data-i18n-title="starredTab" data-i18n-aria="starredTab"></button>
+      </div>
       <div id="libList" class="lib-list"></div>
-      <div class="lib-actions">
+      <div id="libActions" class="lib-actions">
         <button id="newBtn" class="icon-btn" data-icon="plus" data-i18n-title="newRudiment" data-i18n-aria="newRudiment"></button>
         <button id="uploadBtn" data-i18n="upload"></button>
         <button id="downloadAllBtn" data-i18n="downloadAll"></button>
+        <input id="fileInput" type="file" accept=".json,application/json" hidden>
+      </div>
+      <div class="lib-about">
+        <div class="lib-about-text">
+          <div><span data-i18n="by"></span> <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></div>
+          <div><span class="heart" aria-hidden="true">♥</span> <span data-i18n="supportColon"></span>
+            <a href="http://paypal.me/donataso" target="_blank" rel="noopener">PayPal</a> ·
+            <a href="https://github.com/sponsors/donataso" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
         <select id="langSel" aria-label="Language">
           <option value="en">EN</option>
           <option value="de">DE</option>
         </select>
-        <input id="fileInput" type="file" accept=".json,application/json" hidden>
-      </div>
-      <div class="lib-about">
-        <div><span data-i18n="by"></span> <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></div>
-        <div><span class="heart" aria-hidden="true">♥</span> <span data-i18n="supportColon"></span>
-          <a href="http://paypal.me/donataso" target="_blank" rel="noopener">PayPal</a> ·
-          <a href="https://github.com/sponsors/donataso" target="_blank" rel="noopener">GitHub</a>
-        </div>
       </div>
     </aside>
     <div id="scrim" class="scrim" hidden></div>
@@ -54,6 +60,7 @@
             <div id="rMeta" class="meta"></div>
           </div>
           <div class="title-actions">
+            <button id="starBtn" class="icon-btn star-btn" data-icon="star" data-i18n-title="star" data-i18n-aria="star"></button>
             <button id="copyBtn" class="icon-btn" data-icon="copy" data-i18n-title="copy" data-i18n-aria="copy"></button>
             <button id="editBtn" class="icon-btn" data-icon="edit" data-i18n-title="edit" data-i18n-aria="edit"></button>
             <button id="downloadBtn" class="icon-btn" data-icon="download" data-i18n-title="download" data-i18n-aria="download"></button>

@@ -27,6 +27,8 @@ interface Settings {
   current: string;
   metro: TimeSig;
   mode: 'rudiment' | 'metronome';
+  libTab: 'pas' | 'custom' | 'starred';
+  starred: string[];
 }
 
 const DEFAULTS: Settings = {
@@ -41,6 +43,8 @@ const DEFAULTS: Settings = {
   current: 'pas-16',
   metro: { num: 4, den: 4 },
   mode: 'rudiment',
+  libTab: 'pas',
+  starred: [],
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -50,6 +54,7 @@ const stored = loadSettings<Settings>();
 const settings: Settings = { ...DEFAULTS, ...stored, trainer: { ...DEFAULTS.trainer, ...stored.trainer } };
 let custom = loadCustom();
 let mode: 'rudiment' | 'metronome' = settings.mode;
+let libTab: Settings['libTab'] = settings.libTab;
 let current = findRudiment(settings.current) ?? BUILTINS[15];
 let shown: { rud: Rudiment; measures: Measure[] } = { rud: current, measures: parsePattern(current.pattern, current.time) };
 let positions: NotePos[] = [];
@@ -91,6 +96,7 @@ const editor = new Editor($('editor'), { delete: $('edDeleteBtn'), cancel: $('ed
 
 function deleteRudiment(r: Rudiment) {
   custom = custom.filter(c => c.id !== r.id);
+  settings.starred = settings.starred.filter(id => id !== r.id);
   persistCustom();
   closeEditor();
   select(BUILTINS[15]);
@@ -102,12 +108,13 @@ function findRudiment(id: string): Rudiment | undefined {
 }
 
 function persist() {
-  Object.assign(settings, player.opts, { tempo: player.tempo, current: current.id, mode });
+  Object.assign(settings, player.opts, { tempo: player.tempo, current: current.id, mode, libTab });
   saveSettings(settings);
 }
 
 function persistCustom() {
   saveCustom(custom);
+  saveSettings(settings);
   renderLibrary();
 }
 
@@ -122,14 +129,78 @@ function toast(msg: string) {
 // Library
 
 function renderLibrary() {
-  const groups = new Map<string, Rudiment[]>();
-  for (const c of CATEGORIES) groups.set(c, BUILTINS.filter(r => r.category === c));
+  document.querySelectorAll<HTMLButtonElement>('.lib-tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.libtab === libTab)));
+  $('libActions').hidden = libTab !== 'custom';
+  const el = $('libList');
+  el.classList.toggle('starred', libTab === 'starred');
+  if (libTab === 'pas') {
+    el.innerHTML = CATEGORIES.map(cat => groupHtml(cat, BUILTINS.filter(r => r.category === cat))).join('');
+  } else if (libTab === 'custom') {
+    const customCats = [...new Set(custom.map(r => r.category))].sort();
+    el.innerHTML = customCats.map(cat => groupHtml(cat, custom.filter(r => r.category === cat).sort((a, b) => a.name.localeCompare(b.name)))).join('');
+  } else {
+    const list = settings.starred.map(findRudiment).filter((r): r is Rudiment => !!r);
+    el.innerHTML = list.length ? starredHtml(list) : `<p class="lib-empty">${esc(t('noStarredYet'))}</p>`;
+    const ul = el.querySelector<HTMLUListElement>('ul');
+    if (ul) enableDrag(ul, ids => { settings.starred = ids; persist(); });
+  }
   const customCats = [...new Set(custom.map(r => r.category))].sort();
-  const html = [...groups].map(([cat, list]) => groupHtml(cat, list));
-  for (const cat of customCats) html.push(groupHtml(cat, custom.filter(r => r.category === cat).sort((a, b) => a.name.localeCompare(b.name))));
-  $('libList').innerHTML = html.join('');
   $('catList').innerHTML = [...new Set([...CATEGORIES, ...customCats, t('categoryCustom')])].map(c => `<option value="${esc(c)}">`).join('');
   markSelected();
+}
+
+function starredHtml(list: Rudiment[]): string {
+  return `<ul>${list.map(r => `<li data-id="${r.id}"><span class="drag-handle" aria-hidden="true">⠿</span><button data-id="${r.id}">${esc(r.name)}<span class="time-sig">${esc(timeLabel(r.time))}</span></button></li>`).join('')}</ul>`;
+}
+
+function enableDrag(ul: HTMLUListElement, onReorder: (ids: string[]) => void) {
+  let dragEl: HTMLLIElement | undefined;
+  ul.querySelectorAll<HTMLElement>('.drag-handle').forEach(handle => {
+    handle.addEventListener('pointerdown', e => {
+      dragEl = handle.closest('li')!;
+      dragEl.classList.add('dragging');
+      handle.setPointerCapture(e.pointerId);
+    });
+    handle.addEventListener('pointermove', e => {
+      if (!dragEl) return;
+      for (const sib of ul.querySelectorAll<HTMLLIElement>('li')) {
+        if (sib === dragEl) continue;
+        const r = sib.getBoundingClientRect();
+        if (e.clientY < r.top || e.clientY > r.bottom) continue;
+        ul.insertBefore(dragEl, e.clientY < r.top + r.height / 2 ? sib : sib.nextSibling);
+        break;
+      }
+    });
+    const end = () => {
+      if (!dragEl) return;
+      dragEl.classList.remove('dragging');
+      dragEl = undefined;
+      onReorder([...ul.querySelectorAll<HTMLLIElement>('li')].map(li => li.dataset.id!));
+    };
+    handle.addEventListener('pointerup', end);
+    handle.addEventListener('pointercancel', end);
+  });
+}
+
+function isStarred(id: string): boolean {
+  return settings.starred.includes(id);
+}
+
+function toggleStar(r: Rudiment) {
+  const i = settings.starred.indexOf(r.id);
+  if (i >= 0) settings.starred.splice(i, 1);
+  else settings.starred.push(r.id);
+  persist();
+  updateStarButton();
+  if (libTab === 'starred') renderLibrary();
+}
+
+function updateStarButton() {
+  const on = isStarred(current.id);
+  const btn = $('starBtn');
+  btn.classList.toggle('on', on);
+  btn.title = t(on ? 'unstar' : 'star');
+  btn.setAttribute('aria-label', t(on ? 'unstar' : 'star'));
 }
 
 function catLabel(cat: string): string {
@@ -185,7 +256,9 @@ function showRudiment(r: Rudiment, measures: Measure[]) {
   $('copyBtn').hidden = !$('editor').hidden;
   $('downloadBtn').hidden = !$('editor').hidden;
   $('deleteBtn').hidden = !!r.builtin || !$('editor').hidden;
+  $('starBtn').hidden = !$('editor').hidden;
   disarm($('deleteBtn'));
+  updateStarButton();
   drawSheet();
   if (mode === 'rudiment') renderBeats();
 }
@@ -236,6 +309,16 @@ function closeEditor() {
   $('editor').hidden = true;
   editor.close();
 }
+
+document.querySelectorAll<HTMLButtonElement>('.lib-tabs button').forEach(btn => btn.addEventListener('click', () => {
+  const lt = btn.dataset.libtab as Settings['libTab'];
+  if (lt === libTab) return;
+  libTab = lt;
+  renderLibrary();
+  persist();
+}));
+
+$('starBtn').addEventListener('click', () => toggleStar(current));
 
 $('newBtn').addEventListener('click', () => {
   setDrawer(false);
