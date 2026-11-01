@@ -4,6 +4,7 @@
 
 import './style.css';
 import { Editor } from './editor';
+import { renderGroupPicker } from './groupPicker';
 import { confirmClick, disarm, fillIcons } from './icons';
 import { Measure, Rudiment, TimeSig, beatGroups, defaultGroups, parsePattern, timeLabel } from './model';
 import { NotePos, renderSheet } from './notation';
@@ -310,33 +311,36 @@ function fillMetro() {
   const t = settings.metro;
   input('mNum').value = String(t.num);
   $<HTMLSelectElement>('mDen').value = String(t.den);
-  input('mGroups').value = beatGroups(t).join('+');
   $('mGroupsWrap').hidden = t.den !== 8;
+  renderGroupPicker($('mGroups'), t.num, beatGroups(t), groupsChanged);
 }
 
 function metroChanged() {
   const num = Math.max(1, Math.min(32, Math.round(Number(input('mNum').value) || 4)));
   const den = Number($<HTMLSelectElement>('mDen').value);
-  const raw = input('mGroups').value.split('+').map(s => Number(s.trim()));
-  const t: TimeSig = { num, den };
-  const same = num === settings.metro.num && den === settings.metro.den;
-  if (same && den === 8 && raw.every(n => n > 0) && raw.reduce((a, b) => a + b, 0) === num && raw.join('+') !== defaultGroups(num, den).join('+')) t.groups = raw;
+  applyMetro({ num, den });
+}
+
+function groupsChanged(groups: number[]) {
+  const t = settings.metro;
+  const nt: TimeSig = { num: t.num, den: t.den };
+  if (groups.join('+') !== defaultGroups(t.num, t.den).join('+')) nt.groups = groups;
+  applyMetro(nt);
+}
+
+function applyMetro(t: TimeSig) {
   settings.metro = t;
   fillMetro();
   persist();
   renderBeats();
   if (player.playing) player.setTimeline(clickTimeline(t));
 }
-['mNum', 'mDen', 'mGroups'].forEach(id => $(id).addEventListener('change', metroChanged));
+['mNum', 'mDen'].forEach(id => $(id).addEventListener('change', metroChanged));
 
 // Beat indicator
 
-function currentTimeSig(): TimeSig {
-  return mode === 'metronome' ? settings.metro : shown.rud.time;
-}
-
 function renderBeats() {
-  const groups = beatGroups(currentTimeSig());
+  const groups = mode === 'metronome' ? beatGroups(settings.metro) : shown.measures[0].map(b => b.slots.length);
   const mk = (big: boolean) => groups.map((units, gi) => {
     let html = `<span class="dot${gi === 0 ? ' first' : ''}" data-group="${gi}" data-step="0">${big ? gi + 1 : ''}</span>`;
     for (let u = 1; u < units; u++) html += `<span class="dot sub" data-group="${gi}" data-step="${u}"></span>`;

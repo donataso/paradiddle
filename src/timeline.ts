@@ -15,6 +15,7 @@ export interface TBeat {
   q: number;
   lenQ: number;
   index: number;
+  units: number;
 }
 
 export interface Timeline {
@@ -33,7 +34,7 @@ export function buildTimeline(measures: Measure[], den: number): Timeline {
     m.forEach((beat, bi) => {
       const lenQ = beat.len.value * 4;
       const slotQ = lenQ / beat.slots.length;
-      beats.push({ q, lenQ, index: bi });
+      beats.push({ q, lenQ, index: bi, units: beat.slots.length });
       for (const e of beatEvents(beat.slots)) {
         if (e.slot) notes.push({ q: q + e.start * slotQ, durQ: e.len * slotQ, slot: e.slot, index: notes.length });
       }
@@ -45,10 +46,12 @@ export function buildTimeline(measures: Measure[], den: number): Timeline {
 
 export function clickTimeline(time: TimeSig): Timeline {
   let q = 0;
+  const unitQ = 4 / time.den;
   const beats = beatLengths(time).map((len, index) => {
-    const b = { q, lenQ: len.value * 4, index };
-    q += b.lenQ;
+    const lenQ = len.value * 4;
+    const b = { q, lenQ, index, units: Math.max(1, Math.round(lenQ / unitQ)) };
+    q += lenQ;
     return b;
   });
-  return { lenQ: q, notes: [], beats, countIn: beats, unitQ: 4 / time.den };
+  return { lenQ: q, notes: [], beats, countIn: beats, unitQ };
 }

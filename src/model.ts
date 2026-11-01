@@ -75,6 +75,17 @@ export function defaultGroups(num: number, den: number): number[] {
   return Array(num).fill(1);
 }
 
+export function groupStarts(groups: number[]): number[] {
+  const starts: number[] = [];
+  let acc = 0;
+  for (const g of groups) { starts.push(acc); acc += g; }
+  return starts;
+}
+
+export function startsToGroups(starts: number[], num: number): number[] {
+  return starts.map((s, i) => (i + 1 < starts.length ? starts[i + 1] : num) - s);
+}
+
 export function beatGroups(t: TimeSig): number[] {
   const g = t.groups;
   if (g && g.length && g.every(x => x > 0) && g.reduce((a, b) => a + b, 0) === t.num) return g;

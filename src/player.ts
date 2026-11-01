@@ -144,8 +144,8 @@ export class Player {
     for (const beat of beats) {
       items.push({ q: beat.q, type: 'click', beat, level: beat.index === 0 ? 'accent' : 'normal' });
       items.push({ q: beat.q, type: 'step', beat, step: 0 });
-      const units = Math.max(1, Math.round(beat.lenQ / unit));
-      for (let u = 1; u < units; u++) items.push({ q: beat.q + u * unit, type: 'step', beat, step: u });
+      const stepQ = beat.lenQ / beat.units;
+      for (let u = 1; u < beat.units; u++) items.push({ q: beat.q + u * stepQ, type: 'step', beat, step: u });
       if (sub > 1) for (let q = beat.q + step; q < beat.q + beat.lenQ - 1e-9; q += step) items.push({ q, type: 'click', beat, level: 'sub' });
     }
   }

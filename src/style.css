@@ -296,6 +296,7 @@ main {
 .grow { flex: 1; }
 
 .metro-time { display: flex; gap: 16px; flex-wrap: wrap; }
+#mGroupsWrap { flex-basis: 100%; }
 .big-beats {
   position: relative;
   padding: 40px 14px;
@@ -385,7 +386,11 @@ main {
 .settings label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; }
 .tr-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; align-items: center; }
 .tr-grid label { font-size: 13px; color: var(--muted); }
-.tr-grid span { display: flex; align-items: center; gap: 6px; }
+.tr-grid span { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.group-picker { display: inline-flex; align-items: center; }
+.group-picker .gdot { width: 10px; height: 10px; margin-left: 4px; padding: 0; border-radius: 50%; border: 2px solid var(--line); background: none; cursor: pointer; }
+.group-picker .gdot:first-child { margin-left: 0; cursor: default; }
+.group-picker .gdot.start { background: var(--accent); border-color: var(--accent); }
 .metro-mode .settings label:has(#countIn), .metro-mode .settings label:has(#rudVoice), .metro-mode .settings label:has(#rudVol) { display: none; }
 body:not(.metro-mode) .metro-time { display: none; }
 

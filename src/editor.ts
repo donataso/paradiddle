@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { confirmClick, disarm, fillIcons } from './icons';
-import { Beat, DENOMINATORS, Frac, Hand, Measure, Rudiment, Slot, TimeSig, beatLengths, defaultGroups, parsePattern, serializePattern } from './model';
+import { renderGroupPicker } from './groupPicker';
+import { Beat, DENOMINATORS, Frac, Hand, Measure, Rudiment, Slot, TimeSig, beatGroups, beatLengths, defaultGroups, parsePattern, serializePattern } from './model';
 
 const SUBDIVISIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12];
 
@@ -34,7 +35,7 @@ export class Editor {
           <span><input id="edNum" type="number" min="1" max="32" inputmode="numeric"> /
           <select id="edDen">${DENOMINATORS.map(d => `<option>${d}</option>`).join('')}</select></span>
         </label>
-        <label id="edGroupsWrap">Grouping <input id="edGroups" placeholder="2+2+3"></label>
+        <label id="edGroupsWrap">Grouping <span id="edGroups" class="group-picker"></span></label>
       </div>
       <div class="ed-tools" role="toolbar">
         <button data-act="R" title="Right hand">R</button>
@@ -85,7 +86,7 @@ export class Editor {
       this.draft.category = (e.target as HTMLInputElement).value;
       this.dirty = true;
     });
-    for (const id of ['#edNum', '#edDen', '#edGroups']) {
+    for (const id of ['#edNum', '#edDen']) {
       $(root, id).addEventListener('change', () => this.timeChanged());
     }
   }
@@ -111,19 +112,23 @@ export class Editor {
     const t = this.draft.time;
     $<HTMLInputElement>(this.root, '#edNum').value = String(t.num);
     $<HTMLSelectElement>(this.root, '#edDen').value = String(t.den);
-    $<HTMLInputElement>(this.root, '#edGroups').value = (t.groups ?? defaultGroups(t.num, t.den)).join('+');
     $(this.root, '#edGroupsWrap').hidden = t.den !== 8;
+    renderGroupPicker($(this.root, '#edGroups'), t.num, beatGroups(t), groups => this.groupsChanged(groups));
+  }
+
+  private groupsChanged(groups: number[]) {
+    const t = this.draft.time;
+    const time: TimeSig = { num: t.num, den: t.den };
+    if (groups.join('+') !== defaultGroups(t.num, t.den).join('+')) time.groups = groups;
+    this.draft.time = time;
+    this.fillTime();
+    this.emit();
   }
 
   private timeChanged() {
     const num = Math.max(1, Math.min(32, Math.round(Number($<HTMLInputElement>(this.root, '#edNum').value) || 4)));
     const den = Number($<HTMLSelectElement>(this.root, '#edDen').value);
-    const raw = $<HTMLInputElement>(this.root, '#edGroups').value.split('+').map(s => Number(s.trim()));
     const time: TimeSig = { num, den };
-    if (den === 8 && raw.every(n => n > 0) && raw.reduce((a, b) => a + b, 0) === num) {
-      if (raw.join('+') !== defaultGroups(num, den).join('+')) time.groups = raw;
-    }
-    if (den !== this.draft.time.den || num !== this.draft.time.num) delete time.groups;
     this.draft.time = time;
     this.fillTime();
     const lens = beatLengths(time);
