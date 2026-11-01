@@ -14,7 +14,7 @@ Drum rudiments trainer.
 - **Rudiments**: all 40 PAS International Drum Rudiments, grouped by category (rolls, diddles, flams, drags).
 - **Notation**: PAS-style single-line staff, sticking (R/L) under notes, accents, flam/drag grace notes, tremolo slashes for rolls, "z" for buzz.
 - **Playback**: looping, a marker that follows the current note, accent/tap/grace dynamics heard in the sound. Slashed notes play as written-out diddles, buzz as short presses.
-- **Tempo**: BPM per quarter note, -5/-1/+1/+5 buttons.
+- **Tempo**: BPM per quarter note, −10/−5/+5/+10 buttons.
 - **Count-in**: 1 bar before the rudiment loop.
 - **Metronome**: accented beat 1, optional subdivision clicks.
 - **Speed trainer**: start BPM, target BPM, step, step every N loops.

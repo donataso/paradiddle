@@ -81,11 +81,11 @@
       <section class="transport">
         <button id="playBtn" class="play" aria-label="Play"></button>
         <div class="tempo">
+          <button data-tempo="-10">−10</button>
           <button data-tempo="-5">−5</button>
-          <button data-tempo="-1">−1</button>
-          <label class="bpm"><span>♩ =</span><input id="tempoInput" type="number" inputmode="numeric"></label>
-          <button data-tempo="1">+1</button>
+          <label class="bpm"><input id="tempoInput" type="number" inputmode="numeric" aria-label="Tempo (BPM)" title="Tempo (BPM)"></label>
           <button data-tempo="5">+5</button>
+          <button data-tempo="10">+10</button>
           <input id="tempoRange" type="range" aria-label="Tempo">
         </div>
         <div class="status">
