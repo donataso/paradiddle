@@ -15,30 +15,16 @@
 <body>
   <header class="topbar">
     <button id="menuBtn" class="icon" data-i18n-aria="rudimentsList">☰</button>
-    <h1><a href="https://github.com/donataso/paradiddle" target="_blank" rel="noopener">Paradiddle</a></h1>
-    <span class="byline"><span data-i18n="by"></span> <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></span>
+    <h1><a href="https://github.com/donataso/paradiddle" target="_blank" rel="noopener"><img src="icon.svg" alt="" class="app-icon">Paradiddle</a></h1>
     <nav class="tabs" role="tablist">
       <button role="tab" data-mode="rudiment" aria-selected="true" data-i18n="rudimentsTab"></button>
       <button role="tab" data-mode="metronome" aria-selected="false" data-i18n="metronomeTab"></button>
     </nav>
-    <details id="sponsor" class="sponsor">
-      <summary data-i18n-aria="support"><span aria-hidden="true">♥</span><span class="sponsor-label" data-i18n="support"></span></summary>
-      <div class="sponsor-menu">
-        <a href="http://paypal.me/donataso" target="_blank" rel="noopener">PayPal</a>
-        <a href="https://github.com/sponsors/donataso" target="_blank" rel="noopener">GitHub</a>
-      </div>
-    </details>
   </header>
 
   <div class="layout">
     <aside id="library" class="library">
-      <div class="lib-about">
-        <div><span data-i18n="by"></span> <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></div>
-        <div><span class="heart" aria-hidden="true">♥</span> <span data-i18n="supportColon"></span>
-          <a href="http://paypal.me/donataso" target="_blank" rel="noopener">PayPal</a> ·
-          <a href="https://github.com/sponsors/donataso" target="_blank" rel="noopener">GitHub</a>
-        </div>
-      </div>
+      <div class="lib-placeholder"></div>
       <div id="libList" class="lib-list"></div>
       <div class="lib-actions">
         <button id="newBtn" class="icon-btn" data-icon="plus" data-i18n-title="newRudiment" data-i18n-aria="newRudiment"></button>
@@ -49,6 +35,13 @@
           <option value="de">DE</option>
         </select>
         <input id="fileInput" type="file" accept=".json,application/json" hidden>
+      </div>
+      <div class="lib-about">
+        <div><span data-i18n="by"></span> <a href="https://www.linkedin.com/in/olsevicius/" target="_blank" rel="noopener">Donatas Olsevičius</a></div>
+        <div><span class="heart" aria-hidden="true">♥</span> <span data-i18n="supportColon"></span>
+          <a href="http://paypal.me/donataso" target="_blank" rel="noopener">PayPal</a> ·
+          <a href="https://github.com/sponsors/donataso" target="_blank" rel="noopener">GitHub</a>
+        </div>
       </div>
     </aside>
     <div id="scrim" class="scrim" hidden></div>

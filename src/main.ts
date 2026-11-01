@@ -277,13 +277,6 @@ input('fileInput').addEventListener('change', async e => {
   }
 });
 
-// Sponsor menu
-
-document.addEventListener('click', e => {
-  const sponsor = $<HTMLDetailsElement>('sponsor');
-  if (sponsor.open && !sponsor.contains(e.target as Node)) sponsor.open = false;
-});
-
 // Drawer
 
 function setDrawer(open: boolean) {
